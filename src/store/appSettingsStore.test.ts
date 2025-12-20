@@ -96,6 +96,36 @@ describe('appSettingsStore', () => {
 
             setPracticeMode(PracticeMode.KanjiPractice);
             expect(useAppSettingsStore.getState().practiceMode).toBe(PracticeMode.KanjiPractice);
-        })
-    })
+        });
+    });
+
+    describe('setTheme', () => {
+        it('should default to system theme', () => {
+            expect(useAppSettingsStore.getState().theme).toBe('system');
+        });
+
+        it('should set theme to light', () => {
+            const { setTheme } = useAppSettingsStore.getState();
+
+            setTheme('light');
+            expect(useAppSettingsStore.getState().theme).toBe('light');
+        });
+
+        it('should set theme to dark', () => {
+            const { setTheme } = useAppSettingsStore.getState();
+
+            setTheme('dark');
+            expect(useAppSettingsStore.getState().theme).toBe('dark');
+        });
+
+        it('should set theme to system', () => {
+            const { setTheme } = useAppSettingsStore.getState();
+
+            setTheme('light');
+            expect(useAppSettingsStore.getState().theme).toBe('light');
+
+            setTheme('system');
+            expect(useAppSettingsStore.getState().theme).toBe('system');
+        });
+    });
 });

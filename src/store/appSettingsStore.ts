@@ -1,19 +1,24 @@
 import { create } from 'zustand';
 import { PracticeMode } from '../interfaces/practiceMode';
 
+export type Theme = 'light' | 'dark' | 'system';
+
 interface AppSettingsState {
     kanjiCurrentScore: number;
     kanjiTopScore: number;
     practiceMode: PracticeMode;
+    theme: Theme;
     setKanjiCurrentScore: (score: number) => void;
     resetScores: () => void;
     setPracticeMode: (mode: PracticeMode) => void;
+    setTheme: (theme: Theme) => void;
 }
 
 export const useAppSettingsStore = create<AppSettingsState>()((set) => ({
     kanjiCurrentScore: 0,
     kanjiTopScore: 0,
     practiceMode: PracticeMode.None,
+    theme: 'system',
     setKanjiCurrentScore: (score: number) =>
         set((state) => {
             // Prevent negative scores
@@ -34,4 +39,6 @@ export const useAppSettingsStore = create<AppSettingsState>()((set) => ({
     resetScores: () => set({ kanjiCurrentScore: 0, kanjiTopScore: 0 }),
 
     setPracticeMode: (mode: PracticeMode) => set({ practiceMode: mode }),
+
+    setTheme: (theme: Theme) => set({ theme }),
 }));
