@@ -2,6 +2,7 @@ import { ThemeProvider, CssBaseline } from '@mui/material';
 import { useMemo, useEffect, useState } from 'react';
 import './App.css';
 import { SettingsBar } from './components/SettingsBar/SettingsBar';
+import { GameArea } from './components/GameArea/GameArea';
 import { useAppSettingsStore } from './store/appSettingsStore';
 import { lightTheme, darkTheme } from './theme/theme';
 
@@ -34,8 +35,7 @@ function App() {
       <div className="app">
         <SettingsBar />
         <div className="app-content">
-          <h1>React + TypeScript + Vite</h1>
-          <p>Start building your application here!</p>
+          <GameArea />
         </div>
       </div>
     </ThemeProvider>

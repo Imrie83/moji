@@ -44,7 +44,7 @@ export const KanjiTile: React.FC<KanjiTileProps> = ({
         <Paper
             elevation={3}
             sx={{
-                width: 160,
+                width: 120,
                 height: 160,
                 display: 'flex',
                 flexDirection: 'column',
