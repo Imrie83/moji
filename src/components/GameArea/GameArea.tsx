@@ -7,7 +7,8 @@ import { useAppSettingsStore } from '../../store/appSettingsStore';
 import { kanji_n5 } from '../../data/kanji_n5'; // Default to N5 for now, or use all eventually
 
 // Delay before switching to next Kanji after correct answer
-const NEXT_KANJI_DELAY = 250;
+const NEXT_KANJI_DELAY = 600;
+const INCORRECT_DELAY = 800; // Longer delay for incorrect to see the damage
 
 export const GameArea = () => {
     // Stores
@@ -39,13 +40,15 @@ export const GameArea = () => {
         if (isTransitioning) return;
 
         setIsTransitioning(true);
-        checkAnswer(value);
+        const isCorrect = checkAnswer(value);
+
+        const delay = isCorrect ? NEXT_KANJI_DELAY : INCORRECT_DELAY;
 
         // After a delay, add new kanji to queue and reset transition
         setTimeout(() => {
             nextKanji(kanji_n5);
             setIsTransitioning(false);
-        }, NEXT_KANJI_DELAY);
+        }, delay);
     };
 
     if (queue.length === 0) {
@@ -167,6 +170,7 @@ export const GameArea = () => {
                     <KanjiTile
                         kanji={currentKanji}
                         status={feedback === 'none' ? 'default' : feedback}
+                        isAnimating={feedback !== 'none'}
                     />
                 </Box>
 

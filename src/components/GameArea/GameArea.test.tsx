@@ -64,7 +64,7 @@ describe('GameArea', () => {
         const scoreElements = screen.queryAllByText('1', { selector: 'h4' });
         expect(scoreElements.length).toBe(2);
 
-        vi.advanceTimersByTime(250);
+        vi.advanceTimersByTime(600);
         expect(useKanjiGameStore.getState().feedback).toBe('none');
     });
 });
