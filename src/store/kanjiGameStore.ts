@@ -66,7 +66,6 @@ export const useKanjiGameStore = create<KanjiGameState>((set, get) => ({
 
     nextKanji: (kanjiList: Kanji[]) => {
         const { queue, history, feedback, kanjiWeights } = get();
-        if (queue.length === 0) return;
 
         const currentKanji = queue[0];
 

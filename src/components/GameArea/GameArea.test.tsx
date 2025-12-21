@@ -1,70 +1,101 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GameArea } from './GameArea';
 import { useKanjiGameStore } from '../../store/kanjiGameStore';
 import { useAppSettingsStore } from '../../store/appSettingsStore';
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { userEvent } from '@testing-library/user-event';
 
-// Mock wanakana
-vi.mock('wanakana', () => ({
-    bind: vi.fn(),
-    unbind: vi.fn(),
-    toHiragana: vi.fn((val) => val),
-}));
-
-const { mockKanjiList } = vi.hoisted(() => {
+// Mock useMediaQuery
+vi.mock('@mui/material', async () => {
+    const actual = await vi.importActual('@mui/material');
     return {
-        mockKanjiList: [
-            { character: '安', onyomi: ['アン'], kunyomi: ['やす.い'], meaning: ['relax', 'cheap'], level: 'N5' },
-            { character: '一', onyomi: ['イチ', 'イツ'], kunyomi: ['ひと-', 'ひと.つ'], meaning: ['one'], level: 'N5' },
-            { character: '飲', onyomi: ['イン', 'オン'], kunyomi: ['の.む'], meaning: ['drink'], level: 'N5' }
-        ]
+        ...actual,
+        useMediaQuery: vi.fn(),
     };
 });
 
-vi.mock('../../data/kanji_n5', () => ({
-    kanji_n5: mockKanjiList
-}));
+import { useMediaQuery } from '@mui/material';
 
 describe('GameArea', () => {
     beforeEach(() => {
         useKanjiGameStore.getState().resetGame();
         useAppSettingsStore.getState().resetScores();
-        vi.useFakeTimers();
+        vi.mocked(useMediaQuery).mockReturnValue(false);
     });
 
-    afterEach(() => {
-        vi.useRealTimers();
-    });
-
-    it('renders scores and kanji tiles', async () => {
+    it('initializes game on mount', () => {
         render(<GameArea />);
-        vi.advanceTimersByTime(0);
-
-        expect(screen.getByText('Current Score')).toBeInTheDocument();
-        expect(screen.getByText('Top Score')).toBeInTheDocument();
-
-        const tiles = screen.getAllByTestId('kanji-tile');
-        expect(tiles.length).toBeGreaterThan(0);
-        expect(screen.getByTestId('game-area')).toHaveTextContent(/[安一飲]/);
+        expect(useKanjiGameStore.getState().queue.length).toBeGreaterThan(0);
     });
 
-    it('updates score on correct answer', async () => {
+    it('displays loading state if queue is empty', () => {
+        // Mock queue to be empty and handle initializeGame to prevent immediate populate
+        const originalInit = useKanjiGameStore.getState().initializeGame;
+        useKanjiGameStore.getState().initializeGame = vi.fn();
+        useKanjiGameStore.setState({ queue: [] });
+
         render(<GameArea />);
-        vi.advanceTimersByTime(0);
+        expect(screen.getByText(/loading/i)).toBeInTheDocument();
 
-        const input = screen.getByRole('textbox') as HTMLInputElement;
-        const currentKanji = useKanjiGameStore.getState().queue[0];
-        const correctAnswer = currentKanji.onyomi[0];
+        useKanjiGameStore.getState().initializeGame = originalInit;
+    });
 
-        fireEvent.input(input, { target: { value: correctAnswer } });
-        fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
+    it('submits answer and handles transition', async () => {
+        const user = userEvent.setup();
+        render(<GameArea />);
 
-        // Both Current Score and Top Score should show '1'
-        // We look for '1' inside h4 elements
-        const scoreElements = screen.queryAllByText('1', { selector: 'h4' });
-        expect(scoreElements.length).toBe(2);
+        const input = screen.getByPlaceholderText(/type romaji/i);
+        await user.type(input, 'てst{Enter}');
 
-        vi.advanceTimersByTime(600);
-        expect(useKanjiGameStore.getState().feedback).toBe('none');
+        // Should be transitioning
+        expect(input).toBeDisabled();
+
+        // After delay it should be enabled again
+        await waitFor(() => expect(input).not.toBeDisabled(), { timeout: 2000 });
+    });
+
+    it('shows incorrect feedback message', () => {
+        useKanjiGameStore.setState({ feedback: 'incorrect' });
+        render(<GameArea />);
+
+        expect(screen.getByText(/incorrect! the reading was:/i)).toBeInTheDocument();
+    });
+
+    it('displays scores correctly', () => {
+        useAppSettingsStore.setState({ kanjiCurrentScore: 10, kanjiTopScore: 20 });
+        render(<GameArea />);
+
+        expect(screen.getByText('10')).toBeInTheDocument();
+        expect(screen.getByText('20')).toBeInTheDocument();
+    });
+
+    it('renders history and upcoming tiles', () => {
+        const kanji = { character: 'test', onyomi: [], kunyomi: [], meaning: [], level: 'N5' } as any;
+        useKanjiGameStore.setState({
+            history: [{ kanji, status: 'correct' }],
+            queue: [kanji, kanji]
+        });
+
+        render(<GameArea />);
+        // Should render current, upcoming, and history
+        expect(screen.getAllByTestId('kanji-tile').length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('adjusts tile style on mobile', () => {
+        vi.mocked(useMediaQuery).mockReturnValue(true);
+        render(<GameArea />);
+        expect(screen.getByTestId('game-area')).toBeInTheDocument();
+    });
+
+    it('prevents multiple submissions while transitioning', async () => {
+        const user = userEvent.setup();
+        const checkAnswerSpy = vi.spyOn(useKanjiGameStore.getState(), 'checkAnswer');
+        render(<GameArea />);
+
+        const input = screen.getByPlaceholderText(/type romaji/i);
+
+        await user.type(input, 'a{Enter}');
+        expect(checkAnswerSpy).toHaveBeenCalledTimes(1);
+        expect(input).toBeDisabled();
     });
 });

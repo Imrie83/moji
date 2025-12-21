@@ -120,4 +120,28 @@ describe('kanjiGameStore', () => {
         expect(check('せい')).toBe(true);
         expect(check('セイ')).toBe(true);
     });
+
+    it('updates topScore when currentScore exceeds it', () => {
+        const store = useKanjiGameStore.getState();
+        store.initializeGame(mockKanjiList);
+
+        useAppSettingsStore.setState({ kanjiCurrentScore: 5, kanjiTopScore: 3 });
+
+        // checkAnswer calls incrementScore which updates topScore
+        useKanjiGameStore.setState({ queue: [{ ...mockKanjiList[0], onyomi: ['オン'] }] });
+        store.checkAnswer('on');
+
+        expect(useAppSettingsStore.getState().kanjiTopScore).toBe(6);
+    });
+
+    it('handles nextKanji when queue is empty', () => {
+        const store = useKanjiGameStore.getState();
+        store.initializeGame(mockKanjiList);
+
+        useKanjiGameStore.setState({ queue: [], history: [] });
+
+        // Should not crash and should re-initialize queue
+        store.nextKanji(mockKanjiList);
+        expect(useKanjiGameStore.getState().queue.length).toBeGreaterThan(0);
+    });
 });

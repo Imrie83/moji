@@ -3,6 +3,7 @@ import { ThemeToggle } from '../ThemeToggle/ThemeToggle';
 import { SettingsButton } from '../SettingsButton/SettingsButton';
 import { SettingsActions } from '../SettingsActions/SettingsActions';
 import { MobileMenu } from '../MobileMenu/MobileMenu';
+import { EffectsToggle } from '../EffectsToggle/EffectsToggle';
 
 export function SettingsBar() {
     return (
@@ -34,6 +35,7 @@ export function SettingsBar() {
                     <SettingsActions />
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <EffectsToggle />
                     <ThemeToggle />
                     <SettingsButton />
                 </Box>

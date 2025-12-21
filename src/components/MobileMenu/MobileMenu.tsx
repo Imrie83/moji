@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { IconButton, Menu, MenuItem, Switch, Box, Typography } from '@mui/material';
+import { IconButton, Menu, MenuItem, Switch, Box, FormControlLabel } from '@mui/material';
 import MenuOutlined from '@mui/icons-material/MenuOutlined';
 import Brightness4 from '@mui/icons-material/Brightness4';
 import Brightness7 from '@mui/icons-material/Brightness7';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { useAppSettingsStore } from '../../store/appSettingsStore';
 
 export function MobileMenu() {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const { theme, setTheme } = useAppSettingsStore();
+    const { theme, setTheme, effectsLevel, setEffectsLevel } = useAppSettingsStore();
     const open = Boolean(anchorEl);
 
     const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -56,12 +57,34 @@ export function MobileMenu() {
                 <MenuItem>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
                         {isDark ? <Brightness4 fontSize="small" /> : <Brightness7 fontSize="small" />}
-                        <Typography sx={{ flexGrow: 1 }}>Theme</Typography>
-                        <Switch
-                            checked={isDark}
-                            onChange={handleThemeToggle}
-                            size="small"
-                            inputProps={{ 'aria-label': 'Toggle theme' }}
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={isDark}
+                                    onChange={handleThemeToggle}
+                                    size="small"
+                                    inputProps={{ 'aria-label': 'Toggle theme' }}
+                                />
+                            }
+                            label="Theme"
+                            sx={{ flexGrow: 1, margin: 0, '& .MuiFormControlLabel-label': { flexGrow: 1 } }}
+                        />
+                    </Box>
+                </MenuItem>
+                <MenuItem>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+                        <AutoAwesomeIcon fontSize="small" color={effectsLevel === 'premium' ? 'primary' : 'disabled'} />
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={effectsLevel === 'premium'}
+                                    onChange={() => setEffectsLevel(effectsLevel === 'premium' ? 'standard' : 'premium')}
+                                    size="small"
+                                    inputProps={{ 'aria-label': 'Toggle effects level' }}
+                                />
+                            }
+                            label="Premium FX"
+                            sx={{ flexGrow: 1, margin: 0, '& .MuiFormControlLabel-label': { flexGrow: 1 } }}
                         />
                     </Box>
                 </MenuItem>

@@ -1,5 +1,10 @@
 import { Paper, Typography, Box, useTheme, alpha, useMediaQuery } from '@mui/material';
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { Kanji } from '../../interfaces/kanji';
+import { useAppSettingsStore } from '../../store/appSettingsStore';
+import { ParticlesEffect } from '../ParticlesEffect/ParticlesEffect';
+import * as wanakana from 'wanakana';
 
 export interface KanjiTileProps {
     kanji: Kanji;
@@ -8,6 +13,8 @@ export interface KanjiTileProps {
     status?: 'default' | 'correct' | 'incorrect';
     isAnimating?: boolean;
 }
+
+const MotionPaper = motion(Paper);
 
 export const KanjiTile: React.FC<KanjiTileProps> = ({
     kanji,
@@ -18,19 +25,21 @@ export const KanjiTile: React.FC<KanjiTileProps> = ({
 }) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const { effectsLevel } = useAppSettingsStore();
+    const isPremium = effectsLevel === 'premium';
 
     // Determine dimensions based on device
     const width = isMobile ? 85 : 120;
     const height = isMobile ? 115 : 160;
 
-    // Define animations
+    // Standard CSS Animations
     const shakeAnimation = {
         '@keyframes shake': {
             '0%, 100%': { transform: 'translateX(0)' },
             '20%, 60%': { transform: 'translateX(-5px)' },
             '40%, 80%': { transform: 'translateX(5px)' },
         },
-        animation: (status === 'incorrect' && isAnimating) ? 'shake 0.4s ease-in-out' : 'none',
+        animation: (status === 'incorrect' && isAnimating && !isPremium) ? 'shake 0.4s ease-in-out' : 'none',
     };
 
     const starburstAnimation = {
@@ -84,8 +93,21 @@ export const KanjiTile: React.FC<KanjiTileProps> = ({
         }
     };
 
+    // Premium Shake logic
+    const premiumShakeProps = isPremium && status === 'incorrect' && isAnimating ? {
+        animate: {
+            x: [0, -10, 10, -10, 10, -5, 5, 0],
+            rotate: [0, -1, 1, -1, 1, 0],
+        },
+        transition: {
+            duration: 0.5,
+            ease: "easeInOut" as const,
+        }
+    } : {};
+
     return (
-        <Paper
+        <MotionPaper
+            {...(premiumShakeProps as any)}
             elevation={3}
             sx={{
                 width,
@@ -99,12 +121,24 @@ export const KanjiTile: React.FC<KanjiTileProps> = ({
                 border: `${isMobile ? 1 : 2}px solid ${getBorderColor()}`,
                 transition: 'all 0.3s ease',
                 position: 'relative',
-                ...shakeAnimation,
+                overflow: (status === 'correct' && isAnimating) ? 'visible' : 'hidden',
+                ...(!isPremium ? shakeAnimation : {}),
             }}
             data-testid="kanji-tile"
         >
-            {/* Starburst Overlay */}
-            {(status === 'correct' && isAnimating) && <Box sx={starburstAnimation} />}
+            {/* Starburst/Particle Overlay */}
+            <AnimatePresence>
+                {(status === 'correct' && isAnimating) && (
+                    isPremium ? (
+                        <ParticlesEffect
+                            key={`particles-${kanji.character}`}
+                            id={`particles-${kanji.character}`}
+                        />
+                    ) : (
+                        <Box key="standard-starburst" sx={starburstAnimation} />
+                    )
+                )}
+            </AnimatePresence>
 
             {/* Reading (Above) */}
             <Box sx={{ height: isMobile ? 16 : 24, display: 'flex', alignItems: 'center', mb: 0.5, width: '100%', justifyContent: 'center' }}>
@@ -116,7 +150,7 @@ export const KanjiTile: React.FC<KanjiTileProps> = ({
                         align="center"
                         sx={{ fontSize: isMobile ? '0.65rem' : '0.9rem' }}
                     >
-                        {kanji.onyomi.join(', ')}
+                        {wanakana.toHiragana(kanji.onyomi.join(', '))}
                     </Typography>
                 )}
             </Box>
@@ -143,7 +177,7 @@ export const KanjiTile: React.FC<KanjiTileProps> = ({
                         color="text.secondary"
                         align="center"
                         sx={{
-                            fontSize: isMobile ? '0.6rem' : '0.8rem',
+                            fontSize: isMobile ? '0.8rem' : '1rem',
                             lineHeight: 1.2,
                             display: '-webkit-box',
                             WebkitLineClamp: isMobile ? 1 : 2,
@@ -155,6 +189,6 @@ export const KanjiTile: React.FC<KanjiTileProps> = ({
                     </Typography>
                 )}
             </Box>
-        </Paper>
+        </MotionPaper>
     );
 };

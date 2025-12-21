@@ -52,12 +52,31 @@ describe('MobileMenu', () => {
         await user.click(button);
 
         // Find and click theme toggle
-        const themeToggle = screen.getByRole('switch');
+        const themeToggle = screen.getByLabelText(/theme/i);
         expect(themeToggle).not.toBeChecked();
 
         await user.click(themeToggle);
 
         expect(useAppSettingsStore.getState().theme).toBe('dark');
+    });
+
+    it('should toggle effects level from menu', async () => {
+        const user = userEvent.setup();
+        useAppSettingsStore.setState({ effectsLevel: 'standard' });
+
+        render(<MobileMenu />);
+
+        // Open menu
+        const button = screen.getByRole('button', { name: /open menu/i });
+        await user.click(button);
+
+        // Find and click effects toggle
+        const effectsToggle = screen.getByLabelText(/premium fx/i);
+        expect(effectsToggle).not.toBeChecked();
+
+        await user.click(effectsToggle);
+
+        expect(useAppSettingsStore.getState().effectsLevel).toBe('premium');
     });
 
     it('should close menu when action item is clicked', async () => {
