@@ -1,5 +1,4 @@
-import React from 'react';
-import { Paper, Typography, Box, useTheme, alpha } from '@mui/material';
+import { Paper, Typography, Box, useTheme, alpha, useMediaQuery } from '@mui/material';
 import type { Kanji } from '../../interfaces/kanji';
 
 export interface KanjiTileProps {
@@ -16,6 +15,11 @@ export const KanjiTile: React.FC<KanjiTileProps> = ({
     status = 'default',
 }) => {
     const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+    // Determine dimensions based on device
+    const width = isMobile ? 85 : 120;
+    const height = isMobile ? 115 : 160;
 
     // Determine background color based on status
     const getBackgroundColor = () => {
@@ -44,31 +48,31 @@ export const KanjiTile: React.FC<KanjiTileProps> = ({
         <Paper
             elevation={3}
             sx={{
-                width: 120,
-                height: 160,
+                width,
+                height,
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
-                padding: 2,
+                padding: isMobile ? 1 : 2,
                 backgroundColor: getBackgroundColor(),
-                border: `2px solid ${getBorderColor()}`,
+                border: `${isMobile ? 1 : 2}px solid ${getBorderColor()}`,
                 transition: 'all 0.3s ease',
                 position: 'relative',
             }}
             data-testid="kanji-tile"
         >
             {/* Reading (Above) */}
-            <Box sx={{ height: 24, display: 'flex', alignItems: 'center', mb: 1, width: '100%', justifyContent: 'center' }}>
+            <Box sx={{ height: isMobile ? 16 : 24, display: 'flex', alignItems: 'center', mb: 0.5, width: '100%', justifyContent: 'center' }}>
                 {showReading && (
                     <Typography
                         variant="body2"
                         color="text.secondary"
                         noWrap
                         align="center"
-                        sx={{ fontSize: '0.9rem' }}
+                        sx={{ fontSize: isMobile ? '0.65rem' : '0.9rem' }}
                     >
-                        {kanji.kunyomi.join(', ')}
+                        {kanji.onyomi.join(', ')}
                     </Typography>
                 )}
             </Box>
@@ -79,28 +83,28 @@ export const KanjiTile: React.FC<KanjiTileProps> = ({
                 component="div"
                 sx={{
                     fontWeight: 'bold',
-                    fontSize: '3.5rem',
+                    fontSize: isMobile ? '2.2rem' : '3.5rem',
                     lineHeight: 1,
-                    mb: 1
+                    mb: 0.5,
                 }}
             >
                 {kanji.character}
             </Typography>
 
             {/* Meaning (Below) */}
-            <Box sx={{ height: 40, display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'center' }}>
+            <Box sx={{ height: isMobile ? 24 : 40, display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'center' }}>
                 {showMeaning && (
                     <Typography
                         variant="caption"
                         color="text.secondary"
                         align="center"
                         sx={{
-                            fontSize: '0.8rem',
+                            fontSize: isMobile ? '0.6rem' : '0.8rem',
                             lineHeight: 1.2,
                             display: '-webkit-box',
-                            WebkitLineClamp: 2,
+                            WebkitLineClamp: isMobile ? 1 : 2,
                             WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden'
+                            overflow: 'hidden',
                         }}
                     >
                         {kanji.meaning.join(', ')}

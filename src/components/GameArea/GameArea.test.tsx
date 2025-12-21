@@ -1,7 +1,8 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { GameArea } from './GameArea';
 import { useKanjiGameStore } from '../../store/kanjiGameStore';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { useAppSettingsStore } from '../../store/appSettingsStore';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 // Mock wanakana
 vi.mock('wanakana', () => ({
@@ -26,52 +27,44 @@ vi.mock('../../data/kanji_n5', () => ({
 
 describe('GameArea', () => {
     beforeEach(() => {
-        const store = useKanjiGameStore.getState();
-        store.resetGame();
-
-        render(<GameArea />);
+        useKanjiGameStore.getState().resetGame();
+        useAppSettingsStore.getState().resetScores();
+        vi.useFakeTimers();
     });
 
-    it('renders scores and kanji tile', async () => {
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    it('renders scores and kanji tiles', async () => {
+        render(<GameArea />);
+        vi.advanceTimersByTime(0);
+
         expect(screen.getByText('Current Score')).toBeInTheDocument();
         expect(screen.getByText('Top Score')).toBeInTheDocument();
 
-        // Should show one of the kanji
-        // Since we can't control random easily without mocking Math.random (which we could do),
-        // we just check if any of the mock characters appear.
-        const kanjiElement = screen.getByTestId('kanji-tile');
-        expect(kanjiElement).toBeInTheDocument();
-        expect(kanjiElement).toHaveTextContent(/[安一飲]/);
+        const tiles = screen.getAllByTestId('kanji-tile');
+        expect(tiles.length).toBeGreaterThan(0);
+        expect(screen.getByTestId('game-area')).toHaveTextContent(/[安一飲]/);
     });
 
     it('updates score on correct answer', async () => {
+        render(<GameArea />);
+        vi.advanceTimersByTime(0);
+
         const input = screen.getByRole('textbox') as HTMLInputElement;
+        const currentKanji = useKanjiGameStore.getState().queue[0];
+        const correctAnswer = currentKanji.onyomi[0];
 
-        // Find which kanji is displayed to provide correct answer
-        const displayedText = screen.getByTestId('kanji-tile').textContent || '';
-        const targetKanji = mockKanjiList.find(k => displayedText.includes(k.character));
-        const correctAnswer = targetKanji?.onyomi[0] || '';
-
-        fireEvent.change(input, { target: { value: correctAnswer } });
+        fireEvent.input(input, { target: { value: correctAnswer } });
         fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
 
-        // Score should increase (requires store integration check or UI check)
-        // Store updates async? No, synchronous usually.
-        // But UI might wait.
+        // Both Current Score and Top Score should show '1'
+        // We look for '1' inside h4 elements
+        const scoreElements = screen.queryAllByText('1', { selector: 'h4' });
+        expect(scoreElements.length).toBe(2);
 
-        await waitFor(() => {
-            // "1" if started at 0
-            expect(screen.getAllByText('1', { selector: 'h4' })).toHaveLength(2);
-        });
-    });
-
-    it('shows error on incorrect answer', async () => {
-        const input = screen.getByRole('textbox');
-        fireEvent.change(input, { target: { value: 'wrong' } });
-        fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
-
-        await waitFor(() => {
-            expect(screen.getByText('Try again!')).toBeInTheDocument();
-        });
+        vi.advanceTimersByTime(250);
+        expect(useKanjiGameStore.getState().feedback).toBe('none');
     });
 });

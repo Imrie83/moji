@@ -11,8 +11,8 @@ describe('KanjiTile', () => {
         render(<KanjiTile kanji={kanji} showReading={true} showMeaning={true} />);
 
         expect(screen.getByText(kanji.character)).toBeInTheDocument();
-        // Check reading (kunyomi joined)
-        expect(screen.getByText(kanji.kunyomi.join(', '))).toBeInTheDocument();
+        // Check reading (onyomi joined)
+        expect(screen.getByText(kanji.onyomi.join(', '))).toBeInTheDocument();
         // Check meaning (joined)
         expect(screen.getByText(kanji.meaning.join(', '))).toBeInTheDocument();
     });
@@ -21,14 +21,14 @@ describe('KanjiTile', () => {
         const kanji = testCases[0];
         render(<KanjiTile kanji={kanji} />);
         expect(screen.getByText(kanji.character)).toBeInTheDocument();
-        expect(screen.queryByText(kanji.kunyomi.join(', '))).not.toBeInTheDocument();
+        expect(screen.queryByText(kanji.onyomi.join(', '))).not.toBeInTheDocument();
         expect(screen.queryByText(kanji.meaning.join(', '))).not.toBeInTheDocument();
     });
 
     it('shows reading but hides meaning when only showReading is true', () => {
         const kanji = testCases[0];
         render(<KanjiTile kanji={kanji} showReading={true} showMeaning={false} />);
-        expect(screen.getByText(kanji.kunyomi.join(', '))).toBeInTheDocument();
+        expect(screen.getByText(kanji.onyomi.join(', '))).toBeInTheDocument();
         expect(screen.queryByText(kanji.meaning.join(', '))).not.toBeInTheDocument();
     });
 
@@ -36,7 +36,7 @@ describe('KanjiTile', () => {
         const kanji = testCases[0];
         render(<KanjiTile kanji={kanji} showReading={false} showMeaning={true} />);
         expect(screen.getByText(kanji.meaning.join(', '))).toBeInTheDocument();
-        expect(screen.queryByText(kanji.kunyomi.join(', '))).not.toBeInTheDocument();
+        expect(screen.queryByText(kanji.onyomi.join(', '))).not.toBeInTheDocument();
     });
 
     it('renders with "correct" status', () => {

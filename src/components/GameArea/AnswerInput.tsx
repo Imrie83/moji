@@ -28,9 +28,17 @@ export const AnswerInput: React.FC<AnswerInputProps> = ({
         };
     }, []);
 
+    // Restore focus when input is re-enabled
+    useEffect(() => {
+        if (!disabled && inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, [disabled]);
+
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
             e.preventDefault();
+            e.stopPropagation();
             if (inputVal.trim()) {
                 onSubmit(inputVal);
                 setInputVal('');

@@ -1,4 +1,4 @@
-import { Box, Typography, Fade, Paper } from '@mui/material';
+import { Box, Typography, Paper, useTheme, useMediaQuery } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { KanjiTile } from '../KanjiTile/KanjiTile';
 import { AnswerInput } from './AnswerInput';
@@ -7,13 +7,13 @@ import { useAppSettingsStore } from '../../store/appSettingsStore';
 import { kanji_n5 } from '../../data/kanji_n5'; // Default to N5 for now, or use all eventually
 
 // Delay before switching to next Kanji after correct answer
-const NEXT_KANJI_DELAY = 500;
-const ERROR_DISPLAY_DELAY = 500;
+const NEXT_KANJI_DELAY = 250;
 
 export const GameArea = () => {
     // Stores
     const {
-        currentKanji,
+        queue,
+        history,
         nextKanji,
         checkAnswer,
         feedback,
@@ -22,57 +22,81 @@ export const GameArea = () => {
 
     const { kanjiCurrentScore, kanjiTopScore } = useAppSettingsStore();
 
+    // Responsive
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
     // Local state for transitions/delays
     const [isTransitioning, setIsTransitioning] = useState(false);
 
     useEffect(() => {
-        // Initialize game on mount if not ready
-        initializeGame(kanji_n5); // TODO: Make this dynamic based on settings later
-    }, [initializeGame]);
+        if (queue.length === 0) {
+            initializeGame(kanji_n5);
+        }
+    }, [initializeGame, queue.length]);
 
     const handleSubmit = (value: string) => {
         if (isTransitioning) return;
 
-        const correct = checkAnswer(value);
-        if (correct) {
-            setIsTransitioning(true);
-            setTimeout(() => {
-                nextKanji(kanji_n5);
-                setIsTransitioning(false);
-            }, NEXT_KANJI_DELAY);
-        } else {
-            // Shake/Error effect handled by store feedback state passed to components
-            setTimeout(() => {
-                // Optional: Clear feedback state if we want to reset visual cues
-                // checkAnswer handles logic, but maybe we want to reset feedback to 'none' after a bit?
-                // For now, let it stay incorrect until they try again?
-                // Or maybe just flash it. relying on store for now.
-            }, ERROR_DISPLAY_DELAY);
-        }
+        setIsTransitioning(true);
+        checkAnswer(value);
+
+        // After a delay, add new kanji to queue and reset transition
+        setTimeout(() => {
+            nextKanji(kanji_n5);
+            setIsTransitioning(false);
+        }, NEXT_KANJI_DELAY);
     };
 
-    if (!currentKanji) {
+    if (queue.length === 0) {
         return <Box sx={{ p: 4, textAlign: 'center' }}>Loading...</Box>;
     }
+
+    const currentKanji = queue[0];
+    const upcomingKanji = queue.slice(1);
+    const historyKanji = [...history].reverse(); // Most recent first (closest to center)
+
+    const getTileStyle = (distance: number) => {
+        const factor = 1 - (distance * 0.1);
+        const scale = Math.max(0.5, factor);
+        const opacity = Math.max(0.5, factor);
+
+        // Margin compensation to keep visual gap consistent
+        // Base width matches KanjiTile width (85 on mobile, 120 on desktop)
+        const baseWidth = isMobile ? 85 : 120;
+        const marginCompensation = -(baseWidth * (1 - scale)) / 2;
+
+        return {
+            transform: `scale(${scale})`,
+            opacity,
+            mx: `${marginCompensation}px`,
+            transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+            zIndex: 10 - distance,
+        };
+    };
 
     return (
         <Box
             sx={{
-                maxWidth: 600,
+                width: '100%',
+                maxWidth: 1200,
                 mx: 'auto',
-                mt: 4,
-                p: 2,
+                mt: { xs: 2, sm: 4 },
+                p: { xs: 1, sm: 2 },
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 3
+                gap: { xs: 2, sm: 3 },
+                overflow: 'hidden'
             }}
             data-testid="game-area"
         >
-            {/* Score Bar */}
             <Paper
                 elevation={1}
                 sx={{
                     p: 2,
+                    mx: 'auto',
+                    width: '100%',
+                    maxWidth: 600,
                     display: 'flex',
                     justifyContent: 'space-between',
                     bgcolor: 'background.default',
@@ -84,7 +108,7 @@ export const GameArea = () => {
                     <Typography variant="overline" display="block" lineHeight={1}>
                         Current Score
                     </Typography>
-                    <Typography variant="h4" color="primary.main" fontWeight="bold">
+                    <Typography variant="h4" color="primary.main" fontWeight="bold" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
                         {kanjiCurrentScore}
                     </Typography>
                 </Box>
@@ -92,31 +116,76 @@ export const GameArea = () => {
                     <Typography variant="overline" display="block" lineHeight={1}>
                         Top Score
                     </Typography>
-                    <Typography variant="h4" color="text.secondary" fontWeight="bold">
+                    <Typography variant="h4" color="text.secondary" fontWeight="bold" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
                         {kanjiTopScore}
                     </Typography>
                 </Box>
             </Paper>
 
-            {/* Kanji Display Area */}
+            {/* Kanji Display Area - The Carousel */}
             <Box
                 sx={{
                     display: 'flex',
-                    justifyContent: 'center',
-                    py: 2,
-                    minHeight: 200
+                    alignItems: 'center',
+                    py: { xs: 2, sm: 4 },
+                    minHeight: { xs: 180, sm: 300 },
+                    width: '100%',
+                    position: 'relative'
                 }}
             >
-                <Fade in={!isTransitioning} timeout={300}>
-                    <Box>
-                        <KanjiTile
-                            kanji={currentKanji}
-                            showReading={false} // Hidden until maybe guessed? Or never? Logic asks for input.
-                            showMeaning={false} // Hidden until guessed?
-                            status={feedback === 'correct' ? 'correct' : feedback === 'incorrect' ? 'incorrect' : 'default'}
-                        />
-                    </Box>
-                </Fade>
+                {/* History Tiles (Left) */}
+                <Box sx={{
+                    flex: 1,
+                    display: 'flex',
+                    gap: 1,
+                    flexDirection: 'row-reverse',
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                    minWidth: 0,
+                    pr: 1
+                }}>
+                    {historyKanji.map((item, index) => (
+                        <Box key={`history-${item.kanji.character}-${index}`} sx={getTileStyle(index + 1)}>
+                            <KanjiTile
+                                kanji={item.kanji}
+                                status={item.status}
+                                showReading={true}
+                                showMeaning={true}
+                            />
+                        </Box>
+                    ))}
+                </Box>
+
+                {/* Current Tile (Center) */}
+                <Box sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    flex: '0 0 auto',
+                    ...getTileStyle(0)
+                }}>
+                    <KanjiTile
+                        kanji={currentKanji}
+                        status={feedback === 'none' ? 'default' : feedback}
+                    />
+                </Box>
+
+                {/* Queue Tiles (Right) */}
+                <Box sx={{
+                    flex: 1,
+                    display: 'flex',
+                    gap: 1,
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                    minWidth: 0,
+                    pl: 1
+                }}>
+                    {upcomingKanji.map((kanji, index) => (
+                        <Box key={`queue-${kanji.character}-${index}`} sx={getTileStyle(index + 1)}>
+                            <KanjiTile kanji={kanji} />
+                        </Box>
+                    ))}
+                </Box>
             </Box>
 
             {/* Input Area */}
@@ -127,11 +196,11 @@ export const GameArea = () => {
                 />
             </Box>
 
-            {/* Feedback Message (Optional) */}
+            {/* Feedback Message */}
             <Box sx={{ height: 24, textAlign: 'center' }}>
                 {feedback === 'incorrect' && (
-                    <Typography color="error" variant="body2">
-                        Try again!
+                    <Typography color="error" variant="body2" sx={{ fontWeight: 'bold', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                        Incorrect! The reading was: {currentKanji.onyomi.join(', ')}
                     </Typography>
                 )}
             </Box>
