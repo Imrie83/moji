@@ -1,4 +1,4 @@
-import { Switch, IconButton, Box } from '@mui/material';
+import { IconButton, Tooltip } from '@mui/material';
 import Brightness4 from '@mui/icons-material/Brightness4';
 import Brightness7 from '@mui/icons-material/Brightness7';
 import { useAppSettingsStore } from '../../store/appSettingsStore';
@@ -18,24 +18,20 @@ export function ThemeToggle() {
     const isDark = effectiveTheme === 'dark';
 
     const handleToggle = () => {
-        // Toggle between light and dark (skip system for manual toggle)
+        // Toggle between light and dark
         setTheme(isDark ? 'light' : 'dark');
     };
 
     return (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <IconButton size="small" disabled sx={{ color: isDark ? 'text.secondary' : 'warning.main' }}>
-                <Brightness7 fontSize="small" />
-            </IconButton>
-            <Switch
-                checked={isDark}
-                onChange={handleToggle}
-                inputProps={{ 'aria-label': 'Toggle theme' }}
+        <Tooltip title={`Switch to ${isDark ? 'light' : 'dark'} mode`}>
+            <IconButton
+                onClick={handleToggle}
+                color="inherit"
                 size="small"
-            />
-            <IconButton size="small" disabled sx={{ color: isDark ? 'primary.main' : 'text.secondary' }}>
-                <Brightness4 fontSize="small" />
+                aria-label="Toggle theme"
+            >
+                {isDark ? <Brightness7 fontSize="small" /> : <Brightness4 fontSize="small" />}
             </IconButton>
-        </Box>
+        </Tooltip>
     );
 }

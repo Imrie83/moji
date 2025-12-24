@@ -55,18 +55,11 @@ describe('GameArea', () => {
     });
 
     it('shows incorrect feedback message', () => {
-        useKanjiGameStore.setState({ feedback: 'incorrect' });
+        const kanji = { character: 'test', onyomi: ['test_read'], kunyomi: [], meaning: [], level: 'N5' } as any;
+        useKanjiGameStore.setState({ feedback: 'incorrect', queue: [kanji] });
         render(<GameArea />);
 
-        expect(screen.getByText(/incorrect! the reading was:/i)).toBeInTheDocument();
-    });
-
-    it('displays scores correctly', () => {
-        useAppSettingsStore.setState({ kanjiCurrentScore: 10, kanjiTopScore: 20 });
-        render(<GameArea />);
-
-        expect(screen.getByText('10')).toBeInTheDocument();
-        expect(screen.getByText('20')).toBeInTheDocument();
+        expect(screen.getByText(/incorrect! the reading was: test_read/i)).toBeInTheDocument();
     });
 
     it('renders history and upcoming tiles', () => {

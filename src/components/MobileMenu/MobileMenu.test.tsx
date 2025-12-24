@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { MobileMenu } from './MobileMenu';
@@ -6,7 +6,18 @@ import { useAppSettingsStore } from '../../store/appSettingsStore';
 
 describe('MobileMenu', () => {
     beforeEach(() => {
-        useAppSettingsStore.setState({ theme: 'light' });
+        useAppSettingsStore.setState({ theme: 'light', effectsLevel: 'standard' });
+        // Mock matchMedia
+        window.matchMedia = vi.fn().mockImplementation(query => ({
+            matches: false,
+            media: query,
+            onchange: null,
+            addListener: vi.fn(),
+            removeListener: vi.fn(),
+            addEventListener: vi.fn(),
+            removeEventListener: vi.fn(),
+            dispatchEvent: vi.fn(),
+        }));
     });
 
     it('should render hamburger menu button', () => {
@@ -16,29 +27,16 @@ describe('MobileMenu', () => {
         expect(button).toBeInTheDocument();
     });
 
-    it('should open menu when hamburger is clicked', async () => {
+    it('should open menu and show toggles', async () => {
         const user = userEvent.setup();
         render(<MobileMenu />);
 
         const button = screen.getByRole('button', { name: /open menu/i });
         await user.click(button);
 
-        // Menu should be visible
-        expect(screen.getByRole('menu')).toBeInTheDocument();
-    });
-
-    it('should display all menu items when open', async () => {
-        const user = userEvent.setup();
-        render(<MobileMenu />);
-
-        const button = screen.getByRole('button', { name: /open menu/i });
-        await user.click(button);
-
-        // Should see theme toggle and action items
-        expect(screen.getByText('Theme')).toBeInTheDocument();
-        expect(screen.getByText('Action 1')).toBeInTheDocument();
-        expect(screen.getByText('Action 2')).toBeInTheDocument();
-        expect(screen.getByText('Action 3')).toBeInTheDocument();
+        // Should see theme and fx toggles
+        expect(await screen.findByText(/theme:/i)).toBeInTheDocument();
+        expect(screen.getByText(/fx:/i)).toBeInTheDocument();
     });
 
     it('should toggle theme from menu', async () => {
@@ -47,15 +45,11 @@ describe('MobileMenu', () => {
 
         render(<MobileMenu />);
 
-        // Open menu
         const button = screen.getByRole('button', { name: /open menu/i });
         await user.click(button);
 
-        // Find and click theme toggle
-        const themeToggle = screen.getByLabelText(/theme/i);
-        expect(themeToggle).not.toBeChecked();
-
-        await user.click(themeToggle);
+        const themeItem = await screen.findByText(/theme: light/i);
+        await user.click(themeItem);
 
         expect(useAppSettingsStore.getState().theme).toBe('dark');
     });
@@ -66,58 +60,12 @@ describe('MobileMenu', () => {
 
         render(<MobileMenu />);
 
-        // Open menu
         const button = screen.getByRole('button', { name: /open menu/i });
         await user.click(button);
 
-        // Find and click effects toggle
-        const effectsToggle = screen.getByLabelText(/premium fx/i);
-        expect(effectsToggle).not.toBeChecked();
-
-        await user.click(effectsToggle);
+        const effectsItem = await screen.findByText(/fx: standard/i);
+        await user.click(effectsItem);
 
         expect(useAppSettingsStore.getState().effectsLevel).toBe('premium');
-    });
-
-    it('should close menu when action item is clicked', async () => {
-        const user = userEvent.setup();
-        render(<MobileMenu />);
-
-        // Open menu
-        const button = screen.getByRole('button', { name: /open menu/i });
-        await user.click(button);
-
-        // Click action item
-        const action1 = screen.getByText('Action 1');
-        await user.click(action1);
-
-        // Menu should be closed (no longer in document)
-        expect(screen.queryByRole('menu')).not.toBeInTheDocument();
-    });
-
-    it('should display correct icon based on theme', async () => {
-        const user = userEvent.setup();
-
-        // Test with light theme
-        useAppSettingsStore.setState({ theme: 'light' });
-        const { rerender } = render(<MobileMenu />);
-
-        const button = screen.getByRole('button', { name: /open menu/i });
-        await user.click(button);
-
-        // Should show sun icon for light theme
-        expect(screen.getByText('Theme')).toBeInTheDocument();
-
-        // Close menu
-        await user.keyboard('{Escape}');
-
-        // Test with dark theme
-        useAppSettingsStore.setState({ theme: 'dark' });
-        rerender(<MobileMenu />);
-
-        await user.click(button);
-
-        // Should still show theme option
-        expect(screen.getByText('Theme')).toBeInTheDocument();
     });
 });

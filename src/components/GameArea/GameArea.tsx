@@ -1,10 +1,12 @@
-import { Box, Typography, Paper, useTheme, useMediaQuery } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { Box, Typography, useTheme, useMediaQuery } from '@mui/material';
+import { useEffect, useState, useMemo } from 'react';
 import { KanjiTile } from '../KanjiTile/KanjiTile';
 import { AnswerInput } from './AnswerInput';
 import { useKanjiGameStore } from '../../store/kanjiGameStore';
 import { useAppSettingsStore } from '../../store/appSettingsStore';
-import { kanji_n5 } from '../../data/kanji_n5'; // Default to N5 for now, or use all eventually
+import { kanji_n5 } from '../../data/kanji_n5';
+import { kanji_n4 } from '../../data/kanji_n4';
+import { kanji_n3 } from '../../data/kanji_n3';
 
 // Delay before switching to next Kanji after correct answer
 const NEXT_KANJI_DELAY = 600;
@@ -18,10 +20,11 @@ export const GameArea = () => {
         nextKanji,
         checkAnswer,
         feedback,
-        initializeGame
+        initializeGame,
+        resetGame
     } = useKanjiGameStore();
 
-    const { kanjiCurrentScore, kanjiTopScore } = useAppSettingsStore();
+    const { jlptLevels } = useAppSettingsStore();
 
     // Responsive
     const theme = useTheme();
@@ -30,11 +33,22 @@ export const GameArea = () => {
     // Local state for transitions/delays
     const [isTransitioning, setIsTransitioning] = useState(false);
 
+    // Compute combined kanji list based on selected JLPT levels
+    const kanjiList = useMemo(() => {
+        const combined = [];
+        if (jlptLevels.has('N5')) combined.push(...kanji_n5);
+        if (jlptLevels.has('N4')) combined.push(...kanji_n4);
+        if (jlptLevels.has('N3')) combined.push(...kanji_n3);
+        return combined;
+    }, [jlptLevels]);
+
+    // Initialize game when component mounts or when selected levels change
     useEffect(() => {
-        if (queue.length === 0) {
-            initializeGame(kanji_n5);
+        if (kanjiList.length > 0) {
+            resetGame();
+            initializeGame(kanjiList);
         }
-    }, [initializeGame, queue.length]);
+    }, [kanjiList, initializeGame, resetGame]);
 
     const handleSubmit = (value: string) => {
         if (isTransitioning) return;
@@ -46,7 +60,7 @@ export const GameArea = () => {
 
         // After a delay, add new kanji to queue and reset transition
         setTimeout(() => {
-            nextKanji(kanji_n5);
+            nextKanji(kanjiList);
             setIsTransitioning(false);
         }, delay);
     };
@@ -93,38 +107,6 @@ export const GameArea = () => {
             }}
             data-testid="game-area"
         >
-            <Paper
-                elevation={1}
-                sx={{
-                    p: 2,
-                    mx: 'auto',
-                    width: '100%',
-                    maxWidth: 600,
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    bgcolor: 'background.default',
-                    border: 1,
-                    borderColor: 'divider'
-                }}
-            >
-                <Box>
-                    <Typography variant="overline" display="block" lineHeight={1}>
-                        Current Score
-                    </Typography>
-                    <Typography variant="h4" color="primary.main" fontWeight="bold" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
-                        {kanjiCurrentScore}
-                    </Typography>
-                </Box>
-                <Box sx={{ textAlign: 'right' }}>
-                    <Typography variant="overline" display="block" lineHeight={1}>
-                        Top Score
-                    </Typography>
-                    <Typography variant="h4" color="text.secondary" fontWeight="bold" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
-                        {kanjiTopScore}
-                    </Typography>
-                </Box>
-            </Paper>
-
             {/* Kanji Display Area - The Carousel */}
             <Box
                 sx={{

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { IconButton, Menu, MenuItem, Switch, Box, FormControlLabel } from '@mui/material';
+import { IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 import MenuOutlined from '@mui/icons-material/MenuOutlined';
 import Brightness4 from '@mui/icons-material/Brightness4';
 import Brightness7 from '@mui/icons-material/Brightness7';
@@ -32,6 +32,11 @@ export function MobileMenu() {
 
     const handleThemeToggle = () => {
         setTheme(isDark ? 'light' : 'dark');
+        // Optional: close menu on toggle? Usually better to keep open for multiple changes
+    };
+
+    const handleEffectsToggle = () => {
+        setEffectsLevel(effectsLevel === 'premium' ? 'standard' : 'premium');
     };
 
     return (
@@ -54,43 +59,25 @@ export function MobileMenu() {
                     'aria-labelledby': 'mobile-menu-button',
                 }}
             >
-                <MenuItem>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
-                        {isDark ? <Brightness4 fontSize="small" /> : <Brightness7 fontSize="small" />}
-                        <FormControlLabel
-                            control={
-                                <Switch
-                                    checked={isDark}
-                                    onChange={handleThemeToggle}
-                                    size="small"
-                                    inputProps={{ 'aria-label': 'Toggle theme' }}
-                                />
-                            }
-                            label="Theme"
-                            sx={{ flexGrow: 1, margin: 0, '& .MuiFormControlLabel-label': { flexGrow: 1 } }}
-                        />
-                    </Box>
+                <MenuItem onClick={handleThemeToggle}>
+                    <ListItemIcon>
+                        {isDark ? <Brightness7 fontSize="small" /> : <Brightness4 fontSize="small" />}
+                    </ListItemIcon>
+                    <ListItemText>
+                        Theme: {isDark ? 'Dark' : 'Light'}
+                    </ListItemText>
                 </MenuItem>
-                <MenuItem>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
-                        <AutoAwesomeIcon fontSize="small" color={effectsLevel === 'premium' ? 'primary' : 'disabled'} />
-                        <FormControlLabel
-                            control={
-                                <Switch
-                                    checked={effectsLevel === 'premium'}
-                                    onChange={() => setEffectsLevel(effectsLevel === 'premium' ? 'standard' : 'premium')}
-                                    size="small"
-                                    inputProps={{ 'aria-label': 'Toggle effects level' }}
-                                />
-                            }
-                            label="Premium FX"
-                            sx={{ flexGrow: 1, margin: 0, '& .MuiFormControlLabel-label': { flexGrow: 1 } }}
+                <MenuItem onClick={handleEffectsToggle}>
+                    <ListItemIcon>
+                        <AutoAwesomeIcon
+                            fontSize="small"
+                            color={effectsLevel === 'premium' ? 'primary' : 'disabled'}
                         />
-                    </Box>
+                    </ListItemIcon>
+                    <ListItemText>
+                        FX: {effectsLevel === 'premium' ? 'Premium' : 'Standard'}
+                    </ListItemText>
                 </MenuItem>
-                <MenuItem onClick={handleClose}>Action 1</MenuItem>
-                <MenuItem onClick={handleClose}>Action 2</MenuItem>
-                <MenuItem onClick={handleClose}>Action 3</MenuItem>
             </Menu>
         </>
     );

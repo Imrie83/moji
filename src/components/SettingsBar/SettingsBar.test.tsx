@@ -19,8 +19,9 @@ describe('SettingsBar', () => {
         // Desktop container should be visible
         expect(screen.getByTestId('desktop-bar')).toBeVisible();
 
-        // Check contents are present in document
-        expect(screen.getByRole('button', { name: 'Action 1' })).toBeInTheDocument();
+        // Check contents (toggles and settings button)
+        expect(screen.getByRole('button', { name: /toggle theme/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /toggle effects/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /settings/i })).toBeInTheDocument();
     });
 
@@ -34,13 +35,9 @@ describe('SettingsBar', () => {
     it('should have all major components integrated', () => {
         render(<SettingsBar />);
 
-        // Verify all major components are rendered in the DOM
-        expect(screen.getByRole('button', { name: 'Action 1' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /toggle theme/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /toggle effects/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /settings/i })).toBeInTheDocument();
-
-        const toggles = screen.getAllByRole('switch');
-        expect(toggles.length).toBeGreaterThan(0);
-
         expect(screen.getByRole('button', { name: /open menu/i, hidden: true })).toBeInTheDocument();
     });
 });

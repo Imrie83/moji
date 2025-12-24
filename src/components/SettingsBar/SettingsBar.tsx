@@ -1,9 +1,9 @@
 import { Box } from '@mui/material';
 import { ThemeToggle } from '../ThemeToggle/ThemeToggle';
 import { SettingsButton } from '../SettingsButton/SettingsButton';
-import { SettingsActions } from '../SettingsActions/SettingsActions';
 import { MobileMenu } from '../MobileMenu/MobileMenu';
 import { EffectsToggle } from '../EffectsToggle/EffectsToggle';
+import { JlptLevelSelector } from '../JlptLevelSelector/JlptLevelSelector';
 
 export function SettingsBar() {
     return (
@@ -31,9 +31,7 @@ export function SettingsBar() {
                     justifyContent: 'space-between',
                 }}
             >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <SettingsActions />
-                </Box>
+                <JlptLevelSelector />
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <EffectsToggle />
                     <ThemeToggle />
