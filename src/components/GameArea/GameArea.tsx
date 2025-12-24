@@ -7,6 +7,9 @@ import { useAppSettingsStore } from '../../store/appSettingsStore';
 import { kanji_n5 } from '../../data/kanji_n5';
 import { kanji_n4 } from '../../data/kanji_n4';
 import { kanji_n3 } from '../../data/kanji_n3';
+import { hiragana } from '../../data/hiragana';
+import { katakana } from '../../data/katakana';
+import type { Kana } from '../../interfaces/kana';
 
 // Delay before switching to next Kanji after correct answer
 const NEXT_KANJI_DELAY = 600;
@@ -24,7 +27,7 @@ export const GameArea = () => {
         resetGame
     } = useKanjiGameStore();
 
-    const { jlptLevels } = useAppSettingsStore();
+    const { jlptLevels, characterType, kanaTypes } = useAppSettingsStore();
 
     // Responsive
     const theme = useTheme();
@@ -33,22 +36,38 @@ export const GameArea = () => {
     // Local state for transitions/delays
     const [isTransitioning, setIsTransitioning] = useState(false);
 
-    // Compute combined kanji list based on selected JLPT levels
-    const kanjiList = useMemo(() => {
-        const combined = [];
-        if (jlptLevels.has('N5')) combined.push(...kanji_n5);
-        if (jlptLevels.has('N4')) combined.push(...kanji_n4);
-        if (jlptLevels.has('N3')) combined.push(...kanji_n3);
-        return combined;
-    }, [jlptLevels]);
-
-    // Initialize game when component mounts or when selected levels change
-    useEffect(() => {
-        if (kanjiList.length > 0) {
-            resetGame();
-            initializeGame(kanjiList);
+    // Compute combined character list based on mode (kanji or kana)
+    const characterList = useMemo(() => {
+        if (characterType === 'kana') {
+            // Kana mode: combine selected kana types
+            const combined: Kana[] = [];
+            if (kanaTypes.has('hiragana')) combined.push(...hiragana);
+            if (kanaTypes.has('katakana')) combined.push(...katakana);
+            // Map kana to kanji format for compatibility with game store
+            return combined.map(kana => ({
+                character: kana.character,
+                onyomi: [kana.romaji],
+                kunyomi: [],
+                meaning: [kana.type],
+                level: 'N5' as const,
+            }));
+        } else {
+            // Kanji mode: combine selected JLPT levels
+            const combined = [];
+            if (jlptLevels.has('N5')) combined.push(...kanji_n5);
+            if (jlptLevels.has('N4')) combined.push(...kanji_n4);
+            if (jlptLevels.has('N3')) combined.push(...kanji_n3);
+            return combined;
         }
-    }, [kanjiList, initializeGame, resetGame]);
+    }, [characterType, jlptLevels, kanaTypes]);
+
+    // Initialize game when component mounts or when selected levels/types change
+    useEffect(() => {
+        if (characterList.length > 0) {
+            resetGame();
+            initializeGame(characterList);
+        }
+    }, [characterList, resetGame, initializeGame]);
 
     const handleSubmit = (value: string) => {
         if (isTransitioning) return;
@@ -60,7 +79,7 @@ export const GameArea = () => {
 
         // After a delay, add new kanji to queue and reset transition
         setTimeout(() => {
-            nextKanji(kanjiList);
+            nextKanji(characterList);
             setIsTransitioning(false);
         }, delay);
     };

@@ -1,54 +1,48 @@
-import { Box } from '@mui/material';
+import { Box, useMediaQuery, useTheme, Divider } from '@mui/material';
 import { ThemeToggle } from '../ThemeToggle/ThemeToggle';
-import { SettingsButton } from '../SettingsButton/SettingsButton';
-import { MobileMenu } from '../MobileMenu/MobileMenu';
 import { EffectsToggle } from '../EffectsToggle/EffectsToggle';
+import { SettingsButton } from '../SettingsButton/SettingsButton';
 import { JlptLevelSelector } from '../JlptLevelSelector/JlptLevelSelector';
+import { KanaSelector } from '../KanaSelector/KanaSelector';
 
 export function SettingsBar() {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+    if (isMobile) {
+        return (
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    gap: 1,
+                    p: 2,
+                }}
+            >
+                <SettingsButton />
+            </Box>
+        );
+    }
+
     return (
         <Box
-            data-testid="settings-bar"
             sx={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                padding: { xs: '8px 16px', md: '12px 24px' },
-                backgroundColor: 'background.paper',
-                borderBottom: 1,
-                borderColor: 'divider',
-                boxShadow: 1,
+                gap: 2,
+                p: 2,
             }}
         >
-            {/* Desktop view */}
-            <Box
-                data-testid="desktop-bar"
-                sx={{
-                    display: { xs: 'none', md: 'flex' },
-                    alignItems: 'center',
-                    gap: 2,
-                    width: '100%',
-                    justifyContent: 'space-between',
-                }}
-            >
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                 <JlptLevelSelector />
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <EffectsToggle />
-                    <ThemeToggle />
-                    <SettingsButton />
-                </Box>
+                <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
+                <KanaSelector />
             </Box>
-
-            {/* Mobile view */}
-            <Box
-                data-testid="mobile-bar"
-                sx={{
-                    display: { xs: 'flex', md: 'none' },
-                    width: '100%',
-                    justifyContent: 'flex-end',
-                }}
-            >
-                <MobileMenu />
+            <Box sx={{ display: 'flex', gap: 1 }}>
+                <EffectsToggle />
+                <ThemeToggle />
+                <SettingsButton />
             </Box>
         </Box>
     );

@@ -4,7 +4,8 @@ import { useAppSettingsStore, type JlptLevel } from '../../store/appSettingsStor
 const JLPT_LEVELS: JlptLevel[] = ['N5', 'N4', 'N3'];
 
 export function JlptLevelSelector() {
-    const { jlptLevels, toggleJlptLevel } = useAppSettingsStore();
+    const { jlptLevels, toggleJlptLevel, characterType } = useAppSettingsStore();
+    const isKanjiMode = characterType === 'kanji';
 
     return (
         <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
@@ -23,13 +24,14 @@ export function JlptLevelSelector() {
                 <Tooltip key={level} title={`Toggle ${level}`}>
                     <IconButton
                         onClick={() => toggleJlptLevel(level)}
-                        color={jlptLevels.has(level) ? "primary" : "inherit"}
+                        color={jlptLevels.has(level) && isKanjiMode ? "primary" : "inherit"}
                         size="small"
                         aria-label={`Toggle ${level}`}
                         sx={{
                             fontFamily: 'monospace',
                             fontSize: '0.875rem',
                             fontWeight: 600,
+                            opacity: isKanjiMode ? 1 : 0.4,
                         }}
                     >
                         {level}
