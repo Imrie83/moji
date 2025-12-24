@@ -166,7 +166,32 @@ export const KanjiTile: React.FC<KanjiTileProps> = ({
                     mb: 0.5,
                 }}
             >
-                {kanji.character}
+                {(() => {
+                    const text = kanji.character;
+                    // Small kana characters that should be rendered smaller
+                    const smallKana = ['ゃ', 'ゅ', 'ょ', 'ャ', 'ュ', 'ョ', 'ぁ', 'ぃ', 'ぅ', 'ぇ', 'ぉ', 'ァ', 'ィ', 'ゥ', 'ェ', 'ォ', 'っ', 'ッ', 'ゎ', 'ヮ'];
+
+                    // If it's a multi-character string with small kana, render with sizing
+                    if (text.length > 1 && text.split('').some(char => smallKana.includes(char))) {
+                        return (
+                            <span>
+                                {text.split('').map((char, index) => (
+                                    <span
+                                        key={index}
+                                        style={{
+                                            fontSize: smallKana.includes(char) ? '0.7em' : '1em',
+                                            verticalAlign: smallKana.includes(char) ? '0.1em' : 'baseline',
+                                        }}
+                                    >
+                                        {char}
+                                    </span>
+                                ))}
+                            </span>
+                        );
+                    }
+
+                    return text;
+                })()}
             </Typography>
 
             {/* Meaning (Below) */}

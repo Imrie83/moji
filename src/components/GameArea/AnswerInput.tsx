@@ -58,8 +58,7 @@ export const AnswerInput: React.FC<AnswerInputProps> = ({
             onKeyDown={handleKeyDown}
             disabled={disabled}
             autoFocus={autoFocus}
-            label="Reading (Hiragana)"
-            variant="outlined"
+            variant="standard"
             fullWidth
             placeholder="Type romaji..."
             autoComplete="off"
