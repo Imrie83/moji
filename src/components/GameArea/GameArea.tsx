@@ -27,7 +27,7 @@ export const GameArea = () => {
         resetGame
     } = useKanjiGameStore();
 
-    const { jlptLevels, characterType, kanaTypes } = useAppSettingsStore();
+    const { jlptLevels, characterType, kanaTypes, showReading, showMeaning, practiceLimit } = useAppSettingsStore();
 
     // Responsive
     const theme = useTheme();
@@ -66,9 +66,9 @@ export const GameArea = () => {
     useEffect(() => {
         if (characterList.length > 0) {
             resetGame();
-            initializeGame(characterList);
+            initializeGame(characterList, practiceLimit);
         }
-    }, [characterList, resetGame, initializeGame]);
+    }, [characterList, practiceLimit, resetGame, initializeGame]);
 
     const handleSubmit = (value: string) => {
         if (isTransitioning) return;
@@ -80,7 +80,7 @@ export const GameArea = () => {
 
         // After a delay, add new kanji to queue and reset transition
         setTimeout(() => {
-            nextKanji(characterList);
+            nextKanji();
             setIsTransitioning(false);
         }, delay);
     };
@@ -173,6 +173,8 @@ export const GameArea = () => {
                         kanji={currentKanji}
                         status={feedback === 'none' ? 'default' : feedback}
                         isAnimating={feedback !== 'none'}
+                        showReading={showReading}
+                        showMeaning={showMeaning}
                     />
                 </Box>
 
@@ -188,7 +190,11 @@ export const GameArea = () => {
                 }}>
                     {upcomingKanji.map((kanji, index) => (
                         <Box key={`queue-${kanji.character}-${index}`} sx={getTileStyle(index + 1)}>
-                            <KanjiTile kanji={kanji} />
+                            <KanjiTile
+                                kanji={kanji}
+                                showReading={showReading}
+                                showMeaning={showMeaning}
+                            />
                         </Box>
                     ))}
                 </Box>

@@ -1,0 +1,142 @@
+import { Dialog, DialogTitle, DialogContent, FormGroup, FormControlLabel, Switch, Box, Divider, Typography, TextField } from '@mui/material';
+import { useAppSettingsStore } from '../../store/appSettingsStore';
+
+interface SettingsDialogProps {
+    open: boolean;
+    onClose: () => void;
+}
+
+export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
+    const {
+        showReading,
+        showMeaning,
+        showExpandedCard,
+        practiceLimit,
+        retryIncorrect,
+        setShowReading,
+        setShowMeaning,
+        setShowExpandedCard,
+        setPracticeLimit,
+        setRetryIncorrect
+    } = useAppSettingsStore();
+
+    const handleLimitChange = (value: string) => {
+        // Allow empty string or convert to number
+        if (value === '') {
+            setPracticeLimit(0);
+        } else {
+            const num = parseInt(value, 10);
+            if (!isNaN(num) && num >= 0) {
+                setPracticeLimit(num);
+            }
+        }
+    };
+
+    const isInfinityMode = practiceLimit === 0;
+
+    return (
+        <Dialog
+            open={open}
+            onClose={onClose}
+            maxWidth="sm"
+            fullWidth
+        >
+            <DialogTitle>Settings</DialogTitle>
+            <DialogContent>
+                <Box sx={{ py: 2 }}>
+                    <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2 }}>
+                        Card Display Options
+                    </Typography>
+                    <FormGroup>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={showReading}
+                                    onChange={(e) => setShowReading(e.target.checked)}
+                                    data-testid="toggle-reading"
+                                />
+                            }
+                            label="Show Reading (Furigana)"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={showMeaning}
+                                    onChange={(e) => setShowMeaning(e.target.checked)}
+                                    data-testid="toggle-meaning"
+                                />
+                            }
+                            label="Show Meaning"
+                        />
+                        <Divider sx={{ my: 2 }} />
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={showExpandedCard}
+                                    onChange={(e) => setShowExpandedCard(e.target.checked)}
+                                    disabled
+                                    data-testid="toggle-expanded-card"
+                                />
+                            }
+                            label={
+                                <Box>
+                                    <Typography variant="body2">
+                                        Expanded Card View
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                        (Coming soon)
+                                    </Typography>
+                                </Box>
+                            }
+                        />
+                    </FormGroup>
+
+                    <Divider sx={{ my: 3 }} />
+
+                    <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2 }}>
+                        Practice Settings
+                    </Typography>
+                    <Box sx={{ mb: 2 }}>
+                        <TextField
+                            label="Number of Characters to Practice"
+                            value={practiceLimit === 0 ? '' : practiceLimit}
+                            onChange={(e) => handleLimitChange(e.target.value)}
+                            type="text"
+                            size="small"
+                            fullWidth
+                            placeholder="0 for continuous"
+                            helperText="Enter 0 or leave empty for continuous practice"
+                            inputProps={{
+                                'data-testid': 'practice-limit-input'
+                            }}
+                        />
+                    </Box>
+                    <FormGroup>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={retryIncorrect}
+                                    onChange={(e) => setRetryIncorrect(e.target.checked)}
+                                    disabled={isInfinityMode}
+                                    data-testid="toggle-retry-incorrect"
+                                />
+                            }
+                            label={
+                                <Box>
+                                    <Typography variant="body2">
+                                        Retry Incorrect Answers
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                        {isInfinityMode
+                                            ? '(Not available in infinity mode)'
+                                            : 'Re-add incorrect answers to the queue'}
+                                    </Typography>
+                                </Box>
+                            }
+                        />
+                    </FormGroup>
+                </Box>
+            </DialogContent>
+        </Dialog>
+    );
+}

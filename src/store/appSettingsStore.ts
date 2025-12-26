@@ -20,6 +20,13 @@ interface AppSettingsState {
     jlptLevels: Set<JlptLevel>;
     characterType: CharacterType;
     kanaTypes: Set<KanaType>;
+    // Display settings
+    showReading: boolean;
+    showMeaning: boolean;
+    showExpandedCard: boolean;
+    // Practice settings
+    practiceLimit: number; // 0 = infinity
+    retryIncorrect: boolean;
     setKanjiCurrentScore: (score: number) => void;
     resetScores: () => void;
     setPracticeMode: (mode: PracticeMode) => void;
@@ -28,6 +35,11 @@ interface AppSettingsState {
     toggleJlptLevel: (level: JlptLevel) => void;
     setCharacterType: (type: CharacterType) => void;
     toggleKanaType: (type: KanaType) => void;
+    setShowReading: (show: boolean) => void;
+    setShowMeaning: (show: boolean) => void;
+    setShowExpandedCard: (show: boolean) => void;
+    setPracticeLimit: (limit: number) => void;
+    setRetryIncorrect: (retry: boolean) => void;
 }
 
 export const useAppSettingsStore = create<AppSettingsState>()((set) => ({
@@ -39,6 +51,13 @@ export const useAppSettingsStore = create<AppSettingsState>()((set) => ({
     jlptLevels: new Set<JlptLevel>(['N5']),
     characterType: 'kanji',
     kanaTypes: new Set<KanaType>(),
+    // Display settings defaults
+    showReading: false,
+    showMeaning: false,
+    showExpandedCard: false,
+    // Practice settings defaults
+    practiceLimit: 0, // 0 = infinity
+    retryIncorrect: true,
     setKanjiCurrentScore: (score: number) =>
         set((state) => {
             // Prevent negative scores
@@ -71,10 +90,14 @@ export const useAppSettingsStore = create<AppSettingsState>()((set) => ({
             // Only remove if there will be at least one level remaining
             if (newLevels.size > 1) {
                 newLevels.delete(level);
-                return { jlptLevels: newLevels };
+                // Still switch to kanji mode even when removing a level
+                return {
+                    jlptLevels: newLevels,
+                    characterType: 'kanji'
+                };
             }
-            // Don't update state if we can't remove the last level
-            return {};
+            // If we can't remove the last level, still switch to kanji mode
+            return { characterType: 'kanji' };
         } else {
             newLevels.add(level);
             // Switch to kanji mode when selecting a kanji level
@@ -105,4 +128,14 @@ export const useAppSettingsStore = create<AppSettingsState>()((set) => ({
             characterType: 'kana'
         };
     }),
+
+    setShowReading: (show: boolean) => set({ showReading: show }),
+
+    setShowMeaning: (show: boolean) => set({ showMeaning: show }),
+
+    setShowExpandedCard: (show: boolean) => set({ showExpandedCard: show }),
+
+    setPracticeLimit: (limit: number) => set({ practiceLimit: Math.max(0, limit) }),
+
+    setRetryIncorrect: (retry: boolean) => set({ retryIncorrect: retry }),
 }));

@@ -15,10 +15,12 @@ interface KanjiGameState {
     gameStatus: 'idle' | 'playing';
     feedback: 'correct' | 'incorrect' | 'none';
     userInput: string;
+    practiceSet: Kanji[]; // Limited set when practicing with a limit
+    retriedCharacters: Set<string>; // Track which characters have been retried
 
     // Actions
-    initializeGame: (kanjiList: Kanji[]) => void;
-    nextKanji: (kanjiList: Kanji[]) => void;
+    initializeGame: (kanjiList: Kanji[], limit?: number) => void;
+    nextKanji: () => void;
     checkAnswer: (input: string) => boolean;
     setUserInput: (input: string) => void;
     resetGame: () => void;
@@ -37,21 +39,36 @@ export const useKanjiGameStore = create<KanjiGameState>((set, get) => ({
     gameStatus: 'idle',
     feedback: 'none',
     userInput: '',
+    practiceSet: [],
+    retriedCharacters: new Set<string>(),
 
-    initializeGame: (kanjiList: Kanji[]) => {
+    initializeGame: (kanjiList: Kanji[], limit: number = 0) => {
+        // Select a random subset if limit is set
+        let selectedKanji = kanjiList;
+        if (limit > 0) {
+            const shuffled = [...kanjiList].sort(() => Math.random() - 0.5);
+            selectedKanji = shuffled.slice(0, Math.min(limit, kanjiList.length));
+        }
+
         const weights: Record<string, number> = {};
-        kanjiList.forEach(k => {
+        selectedKanji.forEach(k => {
             weights[k.character] = INITIAL_WEIGHT;
         });
 
         // Initialize queue with weighted selection
+        // When limit is set and < 6, show only that many tiles
+        const queueSize = limit > 0 && limit < QUEUE_SIZE + 1 ? limit : QUEUE_SIZE + 1;
         const initialQueue: Kanji[] = [];
         let currentWeights = { ...weights };
+        const selectedCharacters = new Set<string>();
 
-        for (let i = 0; i < QUEUE_SIZE + 1; i++) { // Current + 5 in queue
-            const selected = selectWeightedKanji(kanjiList, currentWeights);
+        for (let i = 0; i < queueSize; i++) {
+            // Filter out already selected characters to ensure uniqueness
+            const availableKanji = selectedKanji.filter(k => !selectedCharacters.has(k.character));
+            const selected = selectWeightedKanji(availableKanji, currentWeights);
             if (selected) {
                 initialQueue.push(selected);
+                selectedCharacters.add(selected.character);
                 currentWeights[selected.character] = Math.max(MIN_WEIGHT, currentWeights[selected.character] * WEIGHT_DROP_FACTOR);
             }
         }
@@ -60,14 +77,21 @@ export const useKanjiGameStore = create<KanjiGameState>((set, get) => ({
             kanjiWeights: currentWeights,
             gameStatus: 'playing',
             queue: initialQueue,
-            history: []
+            history: [],
+            practiceSet: selectedKanji,
+            retriedCharacters: new Set<string>()
         });
     },
 
-    nextKanji: (kanjiList: Kanji[]) => {
-        const { queue, history, feedback, kanjiWeights } = get();
+    nextKanji: () => {
+        const { queue, history, feedback, kanjiWeights, practiceSet, retriedCharacters } = get();
+        const appStore = useAppSettingsStore.getState();
+        const { retryIncorrect, practiceLimit } = appStore;
 
         const currentKanji = queue[0];
+        const isIncorrect = feedback === 'incorrect';
+        const hasNotBeenRetried = !retriedCharacters.has(currentKanji.character);
+        const shouldRetry = isIncorrect && retryIncorrect && practiceLimit > 0 && hasNotBeenRetried;
 
         // Move current to history IF we just came from a guess
         let newHistory = history;
@@ -79,23 +103,54 @@ export const useKanjiGameStore = create<KanjiGameState>((set, get) => ({
             newHistory = [...history, historyItem].slice(-HISTORY_SIZE);
         }
 
-        const remainingQueue = feedback !== 'none' ? queue.slice(1) : queue;
+        let remainingQueue = feedback !== 'none' ? queue.slice(1) : queue;
+        let newRetriedCharacters = new Set(retriedCharacters);
 
-        // Weighted Random Selection for the NEW item to add at the end
-        const selectedKanji = selectWeightedKanji(kanjiList, kanjiWeights);
-
-        if (selectedKanji) {
-            const newWeights = { ...kanjiWeights };
-            newWeights[selectedKanji.character] = Math.max(MIN_WEIGHT, newWeights[selectedKanji.character] * WEIGHT_DROP_FACTOR);
-
-            set({
-                kanjiWeights: newWeights,
-                queue: [...remainingQueue, selectedKanji],
-                history: newHistory,
-                feedback: 'none',
-                userInput: ''
-            });
+        // If we should retry an incorrect answer, insert it back at a random position
+        if (shouldRetry) {
+            const randomIndex = Math.floor(Math.random() * remainingQueue.length);
+            remainingQueue = [
+                ...remainingQueue.slice(0, randomIndex),
+                currentKanji,
+                ...remainingQueue.slice(randomIndex)
+            ];
+            newRetriedCharacters.add(currentKanji.character);
         }
+
+        // Only add new characters if in infinity mode (limit = 0)
+        // When practice limit is set, work only with the initial set
+        const appStoreForCheck = useAppSettingsStore.getState();
+        const shouldAddNewCharacter = appStoreForCheck.practiceLimit === 0;
+
+        if (shouldAddNewCharacter) {
+            // Weighted Random Selection for the NEW item to add at the end
+            const kanjiList = practiceSet.length > 0 ? practiceSet : [];
+            const selectedKanji = selectWeightedKanji(kanjiList, kanjiWeights);
+
+            if (selectedKanji) {
+                const newWeights = { ...kanjiWeights };
+                newWeights[selectedKanji.character] = Math.max(MIN_WEIGHT, newWeights[selectedKanji.character] * WEIGHT_DROP_FACTOR);
+
+                set({
+                    kanjiWeights: newWeights,
+                    queue: [...remainingQueue, selectedKanji],
+                    history: newHistory,
+                    feedback: 'none',
+                    userInput: '',
+                    retriedCharacters: newRetriedCharacters
+                });
+                return;
+            }
+        }
+
+        // If not adding new character, just update state
+        set({
+            queue: remainingQueue,
+            history: newHistory,
+            feedback: 'none',
+            userInput: '',
+            retriedCharacters: newRetriedCharacters
+        });
     },
 
     checkAnswer: (input: string) => {
