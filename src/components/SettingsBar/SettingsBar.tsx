@@ -14,12 +14,26 @@ export function SettingsBar() {
             <Box
                 sx={{
                     display: 'flex',
-                    justifyContent: 'flex-end',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
                     gap: 1,
-                    p: 2,
+                    pt: 1,
+                    px: 2,
+                    pb: 1.5,
+                    borderBottom: '1px solid',
+                    borderColor: 'divider',
                 }}
             >
-                <SettingsButton />
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <JlptLevelSelector />
+                    <Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: 'center' }} />
+                    <KanaSelector />
+                </Box>
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <EffectsToggle />
+                    <ThemeToggle />
+                    <SettingsButton />
+                </Box>
             </Box>
         );
     }
@@ -31,7 +45,9 @@ export function SettingsBar() {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 gap: 2,
-                p: 2,
+                pt: 1,
+                px: 2,
+                pb: 1.5,
             }}
         >
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>

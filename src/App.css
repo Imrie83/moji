@@ -5,6 +5,13 @@
   text-align: center;
 }
 
+/* Mobile-specific adjustments */
+@media (max-width: 900px) {
+  .app {
+    padding: 0;
+  }
+}
+
 .app-content {
   justify-content: flex-start;
 }

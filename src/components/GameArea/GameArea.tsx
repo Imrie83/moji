@@ -32,6 +32,7 @@ export const GameArea = () => {
     // Responsive
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const isLandscape = useMediaQuery('(max-height: 500px) and (orientation: landscape)');
 
     // Local state for transitions/delays
     const [isTransitioning, setIsTransitioning] = useState(false);
@@ -117,11 +118,11 @@ export const GameArea = () => {
                 width: '100%',
                 maxWidth: 1200,
                 mx: 'auto',
-                mt: { xs: 2, sm: 4 },
+                mt: isLandscape ? 0 : { xs: 2, sm: 4 },
                 p: { xs: 1, sm: 2 },
                 display: 'flex',
                 flexDirection: 'column',
-                gap: { xs: 2, sm: 3 },
+                gap: isLandscape ? 0.5 : { xs: 2, sm: 3 },
                 overflow: 'hidden'
             }}
             data-testid="game-area"
@@ -131,8 +132,8 @@ export const GameArea = () => {
                 sx={{
                     display: 'flex',
                     alignItems: 'center',
-                    py: { xs: 2, sm: 4 },
-                    minHeight: { xs: 180, sm: 300 },
+                    py: isLandscape ? 1 : { xs: 2, sm: 4 },
+                    minHeight: isLandscape ? 120 : { xs: 180, sm: 300 },
                     width: '100%',
                     position: 'relative'
                 }}
