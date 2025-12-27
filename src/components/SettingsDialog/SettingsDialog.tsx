@@ -86,20 +86,10 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
                                 <Switch
                                     checked={showExpandedCard}
                                     onChange={(e) => setShowExpandedCard(e.target.checked)}
-                                    disabled
                                     data-testid="toggle-expanded-card"
                                 />
                             }
-                            label={
-                                <Box>
-                                    <Typography variant="body2">
-                                        Expanded Card View
-                                    </Typography>
-                                    <Typography variant="caption" color="text.secondary">
-                                        (Coming soon)
-                                    </Typography>
-                                </Box>
-                            }
+                            label="Expanded Card View"
                         />
                     </FormGroup>
 

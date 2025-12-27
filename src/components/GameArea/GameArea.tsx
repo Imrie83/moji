@@ -1,6 +1,7 @@
-import { Box, Typography, useTheme, useMediaQuery } from '@mui/material';
+import { Box, Typography, useTheme, useMediaQuery, Backdrop, Fade } from '@mui/material';
 import { useEffect, useState, useMemo } from 'react';
 import { KanjiTile } from '../KanjiTile/KanjiTile';
+import { KanjiDetailTile } from '../KanjiDetailTile/KanjiDetailTile';
 import { AnswerInput } from './AnswerInput';
 import { useKanjiGameStore } from '../../store/kanjiGameStore';
 import { useAppSettingsStore } from '../../store/appSettingsStore';
@@ -27,7 +28,7 @@ export const GameArea = () => {
         resetGame
     } = useKanjiGameStore();
 
-    const { jlptLevels, characterType, kanaTypes, showReading, showMeaning, practiceLimit, readingMode } = useAppSettingsStore();
+    const { jlptLevels, characterType, kanaTypes, showReading, showMeaning, practiceLimit, readingMode, showExpandedCard } = useAppSettingsStore();
 
     // Responsive
     const theme = useTheme();
@@ -36,6 +37,7 @@ export const GameArea = () => {
 
     // Local state for transitions/delays
     const [isTransitioning, setIsTransitioning] = useState(false);
+    const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
 
     // Compute combined character list based on mode (kanji or kana)
     const characterList = useMemo(() => {
@@ -85,13 +87,18 @@ export const GameArea = () => {
         }, delay);
     };
 
-    if (queue.length === 0) {
-        return <Box sx={{ p: 4, textAlign: 'center' }}>Loading...</Box>;
-    }
-
     const currentKanji = queue[0];
     const upcomingKanji = queue.slice(1);
     const historyKanji = [...history].reverse(); // Most recent first (closest to center)
+
+    // Close detail view when moving to next kanji
+    useEffect(() => {
+        setMobileDetailOpen(false);
+    }, [currentKanji]);
+
+    if (queue.length === 0) {
+        return <Box sx={{ p: 4, textAlign: 'center' }}>Loading...</Box>;
+    }
 
     const getTileStyle = (distance: number) => {
         const factor = 1 - (distance * 0.1);
@@ -167,8 +174,15 @@ export const GameArea = () => {
                     justifyContent: 'center',
                     alignItems: 'center',
                     flex: '0 0 auto',
+                    cursor: (isMobile && showExpandedCard) ? 'pointer' : 'default',
                     ...getTileStyle(0)
-                }}>
+                }}
+                    onClick={() => {
+                        if (isMobile && showExpandedCard) {
+                            setMobileDetailOpen(true);
+                        }
+                    }}
+                >
                     <KanjiTile
                         kanji={currentKanji}
                         status={feedback === 'none' ? 'default' : feedback}
@@ -220,6 +234,32 @@ export const GameArea = () => {
                     </Typography>
                 )}
             </Box>
+            {/* Expanded Card View (Desktop) */}
+            {!isMobile && showExpandedCard && (
+                <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+                    <KanjiDetailTile kanji={currentKanji} />
+                </Box>
+            )}
+
+            {/* Expanded Card Overlay (Mobile) */}
+            <Backdrop
+                sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1, p: 2, bgcolor: 'rgba(0, 0, 0, 0.8)' }}
+                open={mobileDetailOpen}
+                onClick={() => setMobileDetailOpen(false)}
+            >
+                <Fade in={mobileDetailOpen}>
+                    {/* Wrap in Box to prevent click propagation if we want tapping the card to NOT close it, 
+                         BUT for better UX on mobile, tapping anywhere including the card usually closes it or tapping outside. 
+                         Let's allow tapping outside to close, and maybe tapping the card does nothing? 
+                         Actually, let's make the backdrop click close it. */}
+                    <Box onClick={(e) => e.stopPropagation()} sx={{ width: '100%', maxWidth: 400 }}>
+                        <KanjiDetailTile kanji={currentKanji} />
+                        <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 2, color: 'white' }}>
+                            Tap outside to close
+                        </Typography>
+                    </Box>
+                </Fade>
+            </Backdrop>
         </Box>
     );
 };
