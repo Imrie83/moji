@@ -5,11 +5,13 @@ export type Theme = 'light' | 'dark' | 'system';
 
 export type VisualEffectsLevel = 'standard' | 'premium';
 
-export type JlptLevel = 'N5' | 'N4' | 'N3';
+export type JlptLevel = 'N5' | 'N4' | 'N3' | 'N2' | 'N1';
 
 export type CharacterType = 'kanji' | 'kana';
 
 export type KanaType = 'hiragana' | 'katakana';
+
+export type ReadingMode = 'onyomi' | 'kunyomi' | 'mixed';
 
 interface AppSettingsState {
     kanjiCurrentScore: number;
@@ -27,6 +29,7 @@ interface AppSettingsState {
     // Practice settings
     practiceLimit: number; // 0 = infinity
     retryIncorrect: boolean;
+    readingMode: ReadingMode;
     setKanjiCurrentScore: (score: number) => void;
     resetScores: () => void;
     setPracticeMode: (mode: PracticeMode) => void;
@@ -40,6 +43,7 @@ interface AppSettingsState {
     setShowExpandedCard: (show: boolean) => void;
     setPracticeLimit: (limit: number) => void;
     setRetryIncorrect: (retry: boolean) => void;
+    setReadingMode: (mode: ReadingMode) => void;
 }
 
 export const useAppSettingsStore = create<AppSettingsState>()((set) => ({
@@ -58,6 +62,7 @@ export const useAppSettingsStore = create<AppSettingsState>()((set) => ({
     // Practice settings defaults
     practiceLimit: 0, // 0 = infinity
     retryIncorrect: true,
+    readingMode: 'onyomi',
     setKanjiCurrentScore: (score: number) =>
         set((state) => {
             // Prevent negative scores
@@ -138,4 +143,6 @@ export const useAppSettingsStore = create<AppSettingsState>()((set) => ({
     setPracticeLimit: (limit: number) => set({ practiceLimit: Math.max(0, limit) }),
 
     setRetryIncorrect: (retry: boolean) => set({ retryIncorrect: retry }),
+
+    setReadingMode: (mode: ReadingMode) => set({ readingMode: mode }),
 }));

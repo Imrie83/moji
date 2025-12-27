@@ -158,12 +158,22 @@ export const useKanjiGameStore = create<KanjiGameState>((set, get) => ({
         if (queue.length === 0) return false;
 
         const currentKanji = queue[0];
-        const normalize = (s: string) => toHiragana(s.replace(/[.-]/g, ''), { convertLongVowelMark: true });
-
-        const cleanInput = normalize(input.trim());
-        const isCorrect = currentKanji.onyomi.some(reading => normalize(reading) === cleanInput);
-
         const appStore = useAppSettingsStore.getState();
+        const { readingMode } = appStore;
+
+        const normalize = (s: string) => toHiragana(s.replace(/[.-]/g, ''), { convertLongVowelMark: true });
+        const cleanInput = normalize(input.trim());
+
+        let validReadings: string[] = [];
+        if (readingMode === 'onyomi') {
+            validReadings = currentKanji.onyomi;
+        } else if (readingMode === 'kunyomi') {
+            validReadings = currentKanji.kunyomi;
+        } else {
+            validReadings = [...currentKanji.onyomi, ...currentKanji.kunyomi];
+        }
+
+        const isCorrect = validReadings.some(reading => normalize(reading) === cleanInput);
 
         if (isCorrect) {
             set({ feedback: 'correct' });

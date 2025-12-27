@@ -27,7 +27,7 @@ export const GameArea = () => {
         resetGame
     } = useKanjiGameStore();
 
-    const { jlptLevels, characterType, kanaTypes, showReading, showMeaning, practiceLimit } = useAppSettingsStore();
+    const { jlptLevels, characterType, kanaTypes, showReading, showMeaning, practiceLimit, readingMode } = useAppSettingsStore();
 
     // Responsive
     const theme = useTheme();
@@ -212,7 +212,11 @@ export const GameArea = () => {
             <Box sx={{ height: 24, textAlign: 'center' }}>
                 {feedback === 'incorrect' && (
                     <Typography color="error" variant="body2" sx={{ fontWeight: 'bold', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-                        Incorrect! The reading was: {currentKanji.onyomi.join(', ')}
+                        Incorrect! The reading was: {
+                            readingMode === 'onyomi' ? currentKanji.onyomi.join(', ') :
+                                readingMode === 'kunyomi' ? currentKanji.kunyomi.join(', ') :
+                                    [...currentKanji.onyomi, ...currentKanji.kunyomi].join(', ')
+                        }
                     </Typography>
                 )}
             </Box>

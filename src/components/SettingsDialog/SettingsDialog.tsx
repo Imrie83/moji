@@ -1,5 +1,5 @@
-import { Dialog, DialogTitle, DialogContent, FormGroup, FormControlLabel, Switch, Box, Divider, Typography, TextField } from '@mui/material';
-import { useAppSettingsStore } from '../../store/appSettingsStore';
+import { Dialog, DialogTitle, DialogContent, FormGroup, FormControlLabel, Switch, Box, Divider, Typography, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { useAppSettingsStore, type ReadingMode } from '../../store/appSettingsStore';
 
 interface SettingsDialogProps {
     open: boolean;
@@ -13,12 +13,24 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
         showExpandedCard,
         practiceLimit,
         retryIncorrect,
+        readingMode,
+        characterType,
         setShowReading,
         setShowMeaning,
         setShowExpandedCard,
         setPracticeLimit,
-        setRetryIncorrect
+        setRetryIncorrect,
+        setReadingMode
     } = useAppSettingsStore();
+
+    const handleReadingModeChange = (
+        _event: React.MouseEvent<HTMLElement>,
+        newMode: ReadingMode | null,
+    ) => {
+        if (newMode !== null) {
+            setReadingMode(newMode);
+        }
+    };
 
     const handleLimitChange = (value: string) => {
         // Allow empty string or convert to number
@@ -96,6 +108,32 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
                     <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2 }}>
                         Practice Settings
                     </Typography>
+
+                    <Box sx={{ mb: 3 }}>
+                        <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
+                            Accepted Readings
+                        </Typography>
+                        <ToggleButtonGroup
+                            value={readingMode}
+                            exclusive
+                            onChange={handleReadingModeChange}
+                            aria-label="reading mode"
+                            fullWidth
+                            size="small"
+                            disabled={characterType !== 'kanji'}
+                        >
+                            <ToggleButton value="onyomi" aria-label="onyomi only">
+                                Onyomi
+                            </ToggleButton>
+                            <ToggleButton value="kunyomi" aria-label="kunyomi only">
+                                Kunyomi
+                            </ToggleButton>
+                            <ToggleButton value="mixed" aria-label="both readings">
+                                Both
+                            </ToggleButton>
+                        </ToggleButtonGroup>
+                    </Box>
+
                     <Box sx={{ mb: 2 }}>
                         <TextField
                             label="Number of Characters to Practice"

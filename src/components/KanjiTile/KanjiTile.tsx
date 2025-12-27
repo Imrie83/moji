@@ -25,7 +25,7 @@ export const KanjiTile: React.FC<KanjiTileProps> = ({
 }) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-    const { effectsLevel } = useAppSettingsStore();
+    const { effectsLevel, readingMode } = useAppSettingsStore();
     const isPremium = effectsLevel === 'premium';
 
     // Determine dimensions based on device
@@ -150,7 +150,11 @@ export const KanjiTile: React.FC<KanjiTileProps> = ({
                         align="center"
                         sx={{ fontSize: isMobile ? '0.65rem' : '0.9rem' }}
                     >
-                        {wanakana.toHiragana(kanji.onyomi.join(', '))}
+                        {wanakana.toHiragana(
+                            readingMode === 'onyomi' ? kanji.onyomi.join(', ') :
+                                readingMode === 'kunyomi' ? kanji.kunyomi.join(', ') :
+                                    [...kanji.onyomi, ...kanji.kunyomi].join(', ')
+                        )}
                     </Typography>
                 )}
             </Box>

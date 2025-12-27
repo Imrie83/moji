@@ -1,7 +1,7 @@
 import { IconButton, Box, Tooltip, Typography } from '@mui/material';
 import { useAppSettingsStore, type JlptLevel } from '../../store/appSettingsStore';
 
-const JLPT_LEVELS: JlptLevel[] = ['N5', 'N4', 'N3'];
+const JLPT_LEVELS: JlptLevel[] = ['N5', 'N4', 'N3', 'N2', 'N1'];
 
 export function JlptLevelSelector() {
     const { jlptLevels, toggleJlptLevel, characterType } = useAppSettingsStore();
@@ -27,6 +27,7 @@ export function JlptLevelSelector() {
                         color={jlptLevels.has(level) && isKanjiMode ? "primary" : "inherit"}
                         size="small"
                         aria-label={`Toggle ${level}`}
+                        disabled={(level === 'N1' || level === 'N2') && isKanjiMode}
                         sx={{
                             fontFamily: 'monospace',
                             fontSize: '0.875rem',
