@@ -2,7 +2,7 @@ import { IconButton } from '@mui/material';
 import Settings from '@mui/icons-material/Settings';
 
 interface SettingsButtonProps {
-    onClick?: () => void;
+    readonly onClick?: () => void;
 }
 
 export function SettingsButton({ onClick }: SettingsButtonProps) {

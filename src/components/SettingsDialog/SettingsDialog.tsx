@@ -2,8 +2,8 @@ import { Dialog, DialogTitle, DialogContent, FormGroup, FormControlLabel, Switch
 import { useAppSettingsStore, type ReadingMode } from '../../store/appSettingsStore';
 
 interface SettingsDialogProps {
-    open: boolean;
-    onClose: () => void;
+    readonly open: boolean;
+    readonly onClose: () => void;
 }
 
 export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
@@ -37,8 +37,8 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
         if (value === '') {
             setPracticeLimit(0);
         } else {
-            const num = parseInt(value, 10);
-            if (!isNaN(num) && num >= 0) {
+            const num = Number.parseInt(value, 10);
+            if (!Number.isNaN(num) && num >= 0) {
                 setPracticeLimit(num);
             }
         }

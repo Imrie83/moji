@@ -34,7 +34,7 @@ describe('ParticlesEffect', () => {
         );
 
         const particles = getByTestId('mock-particles');
-        const options = JSON.parse(particles.getAttribute('data-options') || '{}');
+        const options = JSON.parse(particles.dataset.options || '{}');
 
         expect(options.fullScreen.enable).toBe(false);
         expect(options.particles.color.value).toBe(theme.palette.success.main);

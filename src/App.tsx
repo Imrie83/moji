@@ -14,11 +14,11 @@ function App() {
 
   // State to track system preference
   const [systemPrefersDark, setSystemPrefersDark] = useState(
-    window.matchMedia('(prefers-color-scheme: dark)').matches
+    globalThis.matchMedia('(prefers-color-scheme: dark)').matches
   );
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const mediaQuery = globalThis.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (e: MediaQueryListEvent) => setSystemPrefersDark(e.matches);
 
     mediaQuery.addEventListener('change', handleChange);

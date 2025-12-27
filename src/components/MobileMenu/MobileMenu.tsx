@@ -22,7 +22,7 @@ export function MobileMenu() {
     // Determine the effective theme (resolve 'system' to actual theme)
     const getEffectiveTheme = () => {
         if (theme === 'system') {
-            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            return globalThis.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         }
         return theme;
     };

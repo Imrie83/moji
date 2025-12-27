@@ -161,7 +161,7 @@ export const useKanjiGameStore = create<KanjiGameState>((set, get) => ({
         const appStore = useAppSettingsStore.getState();
         const { readingMode } = appStore;
 
-        const normalize = (s: string) => toHiragana(s.replace(/[.-]/g, ''), { convertLongVowelMark: true });
+        const normalize = (s: string) => toHiragana(s.replaceAll(/[.-]/g, ''), { convertLongVowelMark: true });
         const cleanInput = normalize(input.trim());
 
         let validReadings: string[] = [];
@@ -216,5 +216,5 @@ function selectWeightedKanji(kanjiList: Kanji[], weights: Record<string, number>
         }
     }
 
-    return availableKanji[availableKanji.length - 1] || null;
+    return availableKanji.at(-1) || null;
 }

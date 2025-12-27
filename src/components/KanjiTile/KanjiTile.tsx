@@ -93,6 +93,17 @@ export const KanjiTile: React.FC<KanjiTileProps> = ({
         }
     };
 
+    // Determine reading text based on mode
+    const getReadingText = () => {
+        if (readingMode === 'onyomi') {
+            return kanji.onyomi.join(', ');
+        }
+        if (readingMode === 'kunyomi') {
+            return kanji.kunyomi.join(', ');
+        }
+        return [...kanji.onyomi, ...kanji.kunyomi].join(', ');
+    };
+
     // Premium Shake logic
     const premiumShakeProps = isPremium && status === 'incorrect' && isAnimating ? {
         animate: {
@@ -122,7 +133,7 @@ export const KanjiTile: React.FC<KanjiTileProps> = ({
                 transition: 'all 0.3s ease',
                 position: 'relative',
                 overflow: (status === 'correct' && isAnimating) ? 'visible' : 'hidden',
-                ...(!isPremium ? shakeAnimation : {}),
+                ...(isPremium ? {} : shakeAnimation),
             }}
             data-testid="kanji-tile"
         >
@@ -150,11 +161,7 @@ export const KanjiTile: React.FC<KanjiTileProps> = ({
                         align="center"
                         sx={{ fontSize: isMobile ? '0.65rem' : '0.9rem' }}
                     >
-                        {wanakana.toHiragana(
-                            readingMode === 'onyomi' ? kanji.onyomi.join(', ') :
-                                readingMode === 'kunyomi' ? kanji.kunyomi.join(', ') :
-                                    [...kanji.onyomi, ...kanji.kunyomi].join(', ')
-                        )}
+                        {wanakana.toHiragana(getReadingText())}
                     </Typography>
                 )}
             </Box>
@@ -173,18 +180,18 @@ export const KanjiTile: React.FC<KanjiTileProps> = ({
                 {(() => {
                     const text = kanji.character;
                     // Small kana characters that should be rendered smaller
-                    const smallKana = ['ゃ', 'ゅ', 'ょ', 'ャ', 'ュ', 'ョ', 'ぁ', 'ぃ', 'ぅ', 'ぇ', 'ぉ', 'ァ', 'ィ', 'ゥ', 'ェ', 'ォ', 'っ', 'ッ', 'ゎ', 'ヮ'];
+                    const smallKana = new Set(['ゃ', 'ゅ', 'ょ', 'ャ', 'ュ', 'ョ', 'ぁ', 'ぃ', 'ぅ', 'ぇ', 'ぉ', 'ァ', 'ィ', 'ゥ', 'ェ', 'ォ', 'っ', 'ッ', 'ゎ', 'ヮ']);
 
                     // If it's a multi-character string with small kana, render with sizing
-                    if (text.length > 1 && text.split('').some(char => smallKana.includes(char))) {
+                    if (text.length > 1 && text.split('').some(char => smallKana.has(char))) {
                         return (
                             <span>
                                 {text.split('').map((char, index) => (
                                     <span
-                                        key={index}
+                                        key={`${char}-${index}`}
                                         style={{
-                                            fontSize: smallKana.includes(char) ? '0.7em' : '1em',
-                                            verticalAlign: smallKana.includes(char) ? '0.1em' : 'baseline',
+                                            fontSize: smallKana.has(char) ? '0.7em' : '1em',
+                                            verticalAlign: smallKana.has(char) ? '0.1em' : 'baseline',
                                         }}
                                     >
                                         {char}

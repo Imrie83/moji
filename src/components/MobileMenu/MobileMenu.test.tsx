@@ -8,7 +8,7 @@ describe('MobileMenu', () => {
     beforeEach(() => {
         useAppSettingsStore.setState({ theme: 'light', effectsLevel: 'standard' });
         // Mock matchMedia
-        window.matchMedia = vi.fn().mockImplementation(query => ({
+        globalThis.matchMedia = vi.fn().mockImplementation(query => ({
             matches: false,
             media: query,
             onchange: null,

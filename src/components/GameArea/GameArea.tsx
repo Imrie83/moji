@@ -96,6 +96,13 @@ export const GameArea = () => {
         setMobileDetailOpen(false);
     }, [currentKanji]);
 
+    const correctReadingText = useMemo(() => {
+        if (!currentKanji) return '';
+        if (readingMode === 'onyomi') return currentKanji.onyomi.join(', ');
+        if (readingMode === 'kunyomi') return currentKanji.kunyomi.join(', ');
+        return [...currentKanji.onyomi, ...currentKanji.kunyomi].join(', ');
+    }, [currentKanji, readingMode]);
+
     if (queue.length === 0) {
         return <Box sx={{ p: 4, textAlign: 'center' }}>Loading...</Box>;
     }
@@ -226,11 +233,7 @@ export const GameArea = () => {
             <Box sx={{ height: 24, textAlign: 'center' }}>
                 {feedback === 'incorrect' && (
                     <Typography color="error" variant="body2" sx={{ fontWeight: 'bold', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-                        Incorrect! The reading was: {
-                            readingMode === 'onyomi' ? currentKanji.onyomi.join(', ') :
-                                readingMode === 'kunyomi' ? currentKanji.kunyomi.join(', ') :
-                                    [...currentKanji.onyomi, ...currentKanji.kunyomi].join(', ')
-                        }
+                        Incorrect! The reading was: {correctReadingText}
                     </Typography>
                 )}
             </Box>
@@ -248,10 +251,6 @@ export const GameArea = () => {
                 onClick={() => setMobileDetailOpen(false)}
             >
                 <Fade in={mobileDetailOpen}>
-                    {/* Wrap in Box to prevent click propagation if we want tapping the card to NOT close it, 
-                         BUT for better UX on mobile, tapping anywhere including the card usually closes it or tapping outside. 
-                         Let's allow tapping outside to close, and maybe tapping the card does nothing? 
-                         Actually, let's make the backdrop click close it. */}
                     <Box onClick={(e) => e.stopPropagation()} sx={{ width: '100%', maxWidth: 400 }}>
                         <KanjiDetailTile kanji={currentKanji} />
                         <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 2, color: 'white' }}>

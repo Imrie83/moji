@@ -4,7 +4,7 @@ import type { ISourceOptions } from "@tsparticles/engine";
 import { useTheme, Box } from "@mui/material";
 
 interface ParticlesEffectProps {
-    id: string;
+    readonly id: string;
 }
 
 export function ParticlesEffect({ id }: ParticlesEffectProps) {

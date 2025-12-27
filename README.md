@@ -1,73 +1,66 @@
-# React + TypeScript + Vite
+# Kanji Practice App 🇯🇵
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, interactive application for practicing Japanese Kanji and Kana (Hiragana/Katakana). Built with React, TypeScript, and Vite, featuring a responsive design and smooth animations.
 
-Currently, two official plugins are available:
+## ✨ Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Kanji Practice**: Practice N5 Kanji with detailed cards showing readings and meanings.
+- **Kana Practice**: Seamlessly switch between Hiragana and Katakana practice modes.
+- **Interactive UI**:
+    - **Animations**: Smooth transitions and particle effects powered by `framer-motion` and `tsparticles`.
+    - **Settings**: Customize your learning experience (toggle furigana, english meanings, and more).
+- **Responsive Design**: Optimized for various screen sizes.
+- **Smart Input**: Integrated with `wanakana` for automatic Romaji-to-Kana conversion as you type.
 
-## React Compiler
+## 📸 Screenshots & Demo
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Dashboard | Kana Mode |
+|-----------|-----------|
+| ![Dashboard](assets/home_screen.png) | ![Kana Mode](assets/kana_mode.png) |
 
-## Expanding the ESLint configuration
+| Settings | Success State |
+|----------|---------------|
+| ![Settings](assets/settings_dialog.png) | ![Success](assets/success_state.png) |
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Walkthrough
+![Demo](assets/demo.webp)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🛠️ Tech Stack
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **Framework**: [React 19](https://react.dev/)
+- **Build Tool**: [Vite](https://vitejs.dev/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+- **UI Components**:
+  - [Material UI](https://mui.com/)
+  - [Bootstrap](https://getbootstrap.com/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Utilities**:
+  - [Wanakana](https://github.com/WaniKani/WanaKana) (Romaji <-> Kana conversion)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🚀 Getting Started
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+1.  **Clone the repository**
+    ```bash
+    git clone <repository-url>
+    cd kanji_practice
+    ```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+3.  **Run the development server**
+    ```bash
+    npm run dev
+    ```
+
+4.  **Build for production**
+    ```bash
+    npm run build
+    ```
+
+## 📄 License
+
+This project is licensed under the MIT License.
