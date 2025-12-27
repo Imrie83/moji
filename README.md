@@ -12,19 +12,6 @@ A modern, interactive application for practicing Japanese Kanji and Kana (Hiraga
 - **Responsive Design**: Optimized for various screen sizes.
 - **Smart Input**: Integrated with `wanakana` for automatic Romaji-to-Kana conversion as you type.
 
-## 📸 Screenshots & Demo
-
-| Dashboard | Kana Mode |
-|-----------|-----------|
-| ![Dashboard](assets/home_screen.png) | ![Kana Mode](assets/kana_mode.png) |
-
-| Settings | Success State |
-|----------|---------------|
-| ![Settings](assets/settings_dialog.png) | ![Success](assets/success_state.png) |
-
-### Walkthrough
-![Demo](assets/demo.webp)
-
 ## 🛠️ Tech Stack
 
 - **Framework**: [React 19](https://react.dev/)
