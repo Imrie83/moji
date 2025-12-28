@@ -17,6 +17,8 @@ interface KanjiGameState {
     userInput: string;
     practiceSet: Kanji[]; // Limited set when practicing with a limit
     retriedCharacters: Set<string>; // Track which characters have been retried
+    correctCount: number;
+    incorrectCount: number;
 
     // Actions
     initializeGame: (kanjiList: Kanji[], limit?: number) => void;
@@ -41,6 +43,8 @@ export const useKanjiGameStore = create<KanjiGameState>((set, get) => ({
     userInput: '',
     practiceSet: [],
     retriedCharacters: new Set<string>(),
+    correctCount: 0,
+    incorrectCount: 0,
 
     initializeGame: (kanjiList: Kanji[], limit: number = 0) => {
         // Select a random subset if limit is set
@@ -79,7 +83,9 @@ export const useKanjiGameStore = create<KanjiGameState>((set, get) => ({
             queue: initialQueue,
             history: [],
             practiceSet: selectedKanji,
-            retriedCharacters: new Set<string>()
+            retriedCharacters: new Set<string>(),
+            correctCount: 0,
+            incorrectCount: 0,
         });
     },
 
@@ -89,6 +95,25 @@ export const useKanjiGameStore = create<KanjiGameState>((set, get) => ({
         const { retryIncorrect, practiceLimit } = appStore;
 
         const currentKanji = queue[0];
+
+        // If queue is empty, we attempt to replenish it if allowed, otherwise just return
+        if (!currentKanji) {
+            const appStoreForCheck = useAppSettingsStore.getState();
+            const shouldAddNewCharacter = appStoreForCheck.practiceLimit === 0;
+            if (shouldAddNewCharacter) {
+                const kanjiList = practiceSet.length > 0 ? practiceSet : [];
+                const selectedKanji = selectWeightedKanji(kanjiList, kanjiWeights);
+                if (selectedKanji) {
+                    set({
+                        queue: [selectedKanji],
+                        feedback: 'none',
+                        userInput: ''
+                    });
+                }
+            }
+            return;
+        }
+
         const isIncorrect = feedback === 'incorrect';
         const hasNotBeenRetried = !retriedCharacters.has(currentKanji.character);
         const shouldRetry = isIncorrect && retryIncorrect && practiceLimit > 0 && hasNotBeenRetried;
@@ -176,12 +201,18 @@ export const useKanjiGameStore = create<KanjiGameState>((set, get) => ({
         const isCorrect = validReadings.some(reading => normalize(reading) === cleanInput);
 
         if (isCorrect) {
-            set({ feedback: 'correct' });
-            appStore.setKanjiCurrentScore(appStore.kanjiCurrentScore + 1);
+            set((state) => ({
+                feedback: 'correct',
+                correctCount: state.correctCount + 1
+            }));
+            // appStore.setKanjiCurrentScore(appStore.kanjiCurrentScore + 1); // Removing old score logic
             return true;
         } else {
-            set({ feedback: 'incorrect' });
-            appStore.setKanjiCurrentScore(0);
+            set((state) => ({
+                feedback: 'incorrect',
+                incorrectCount: state.incorrectCount + 1
+            }));
+            // appStore.setKanjiCurrentScore(0); // Removing old score logic
             return false;
         }
     },
@@ -193,7 +224,9 @@ export const useKanjiGameStore = create<KanjiGameState>((set, get) => ({
         history: [],
         gameStatus: 'idle',
         feedback: 'none',
-        userInput: ''
+        userInput: '',
+        correctCount: 0,
+        incorrectCount: 0,
     })
 }));
 

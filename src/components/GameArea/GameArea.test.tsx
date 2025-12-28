@@ -54,10 +54,15 @@ describe('GameArea', () => {
         await waitFor(() => expect(input).not.toBeDisabled(), { timeout: 2000 });
     });
 
-    it('shows incorrect feedback message', () => {
+    it('shows incorrect feedback message', async () => {
         const kanji = { character: 'test', onyomi: ['test_read'], kunyomi: [], meaning: [], level: 'N5' } as any;
-        useKanjiGameStore.setState({ feedback: 'incorrect', queue: [kanji] });
         render(<GameArea />);
+
+        // Set state after mount to avoid resetGame in useEffect clearing it
+        const { act } = await import('@testing-library/react');
+        act(() => {
+            useKanjiGameStore.setState({ feedback: 'incorrect', queue: [kanji] });
+        });
 
         expect(screen.getByText(/incorrect! the reading was: test_read/i)).toBeInTheDocument();
     });

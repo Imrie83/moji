@@ -59,12 +59,14 @@ describe('kanjiGameStore', () => {
         expect(useKanjiGameStore.getState().queue.length).toBe(1);
 
         // Call nextKanji to perform shift
-        store.nextKanji(mockKanjiList);
+        store.nextKanji();
 
         const state = useKanjiGameStore.getState();
         expect(state.history.length).toBe(1);
         expect(state.history[0].status).toBe('correct');
-        expect(useAppSettingsStore.getState().kanjiCurrentScore).toBe(1);
+        const updatedState = useKanjiGameStore.getState();
+        expect(updatedState.correctCount).toBe(1);
+        expect(updatedState.incorrectCount).toBe(0);
     });
 
     it('rejects Kunyomi answer', () => {
@@ -81,12 +83,13 @@ describe('kanjiGameStore', () => {
         expect(result).toBe(false);
         expect(useKanjiGameStore.getState().feedback).toBe('incorrect');
 
-        store.nextKanji(mockKanjiList);
+        store.nextKanji();
 
         const state = useKanjiGameStore.getState();
         expect(state.history.length).toBe(1);
         expect(state.history[0].status).toBe('incorrect');
-        expect(useAppSettingsStore.getState().kanjiCurrentScore).toBe(0);
+        expect(state.incorrectCount).toBe(1);
+        expect(state.correctCount).toBe(0);
     });
 
     it('validates incorrect answer', () => {
@@ -102,9 +105,9 @@ describe('kanjiGameStore', () => {
         expect(result).toBe(false);
         expect(useKanjiGameStore.getState().feedback).toBe('incorrect');
 
-        store.nextKanji(mockKanjiList);
+        store.nextKanji();
         expect(useKanjiGameStore.getState().history.length).toBe(1);
-        expect(useAppSettingsStore.getState().kanjiCurrentScore).toBe(0);
+        expect(useKanjiGameStore.getState().incorrectCount).toBe(1);
     });
 
     it('normalizes answer input with dots/forms', () => {
@@ -121,19 +124,6 @@ describe('kanjiGameStore', () => {
         expect(check('セイ')).toBe(true);
     });
 
-    it('updates topScore when currentScore exceeds it', () => {
-        const store = useKanjiGameStore.getState();
-        store.initializeGame(mockKanjiList);
-
-        useAppSettingsStore.setState({ kanjiCurrentScore: 5, kanjiTopScore: 3 });
-
-        // checkAnswer calls incrementScore which updates topScore
-        useKanjiGameStore.setState({ queue: [{ ...mockKanjiList[0], onyomi: ['オン'] }] });
-        store.checkAnswer('on');
-
-        expect(useAppSettingsStore.getState().kanjiTopScore).toBe(6);
-    });
-
     it('handles nextKanji when queue is empty', () => {
         const store = useKanjiGameStore.getState();
         store.initializeGame(mockKanjiList);
@@ -141,7 +131,7 @@ describe('kanjiGameStore', () => {
         useKanjiGameStore.setState({ queue: [], history: [] });
 
         // Should not crash and should re-initialize queue
-        store.nextKanji(mockKanjiList);
+        store.nextKanji();
         expect(useKanjiGameStore.getState().queue.length).toBeGreaterThan(0);
     });
 });

@@ -25,7 +25,7 @@ export const GameArea = () => {
         checkAnswer,
         feedback,
         initializeGame,
-        resetGame
+        resetGame,
     } = useKanjiGameStore();
 
     const { jlptLevels, characterType, kanaTypes, showReading, showMeaning, practiceLimit, readingMode, showExpandedCard } = useAppSettingsStore();
