@@ -111,6 +111,23 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
                             fullWidth
                             size="small"
                             disabled={characterType !== 'kanji'}
+                            sx={{
+                                gap: 1,
+                                '& .MuiToggleButtonGroup-grouped': {
+                                    border: 1,
+                                    borderColor: 'divider',
+                                    borderRadius: '4px',
+                                    '&:not(:first-of-type)': {
+                                        borderRadius: '4px',
+                                        borderLeft: 1,
+                                        borderLeftColor: 'divider',
+                                        marginLeft: 0,
+                                    },
+                                    '&:first-of-type': {
+                                        borderRadius: '4px',
+                                    },
+                                }
+                            }}
                         >
                             <ToggleButton value="onyomi" aria-label="onyomi only">
                                 Onyomi
@@ -134,8 +151,10 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
                             fullWidth
                             placeholder="0 for continuous"
                             helperText="Enter 0 or leave empty for continuous practice"
-                            inputProps={{
-                                'data-testid': 'practice-limit-input'
+                            slotProps={{
+                                htmlInput: {
+                                    'data-testid': 'practice-limit-input'
+                                }
                             }}
                         />
                     </Box>

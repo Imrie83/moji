@@ -34,7 +34,6 @@ export function SettingsBar() {
                         <KanaSelector />
                     </Box>
                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                        <EffectsToggle />
                         <ThemeToggle />
                         <SettingsButton onClick={() => setSettingsOpen(true)} />
                     </Box>

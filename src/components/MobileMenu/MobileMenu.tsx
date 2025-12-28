@@ -55,8 +55,10 @@ export function MobileMenu() {
                 anchorEl={anchorEl}
                 open={open}
                 onClose={handleClose}
-                MenuListProps={{
-                    'aria-labelledby': 'mobile-menu-button',
+                slotProps={{
+                    list: {
+                        'aria-labelledby': 'mobile-menu-button',
+                    }
                 }}
             >
                 <MenuItem onClick={handleThemeToggle}>
