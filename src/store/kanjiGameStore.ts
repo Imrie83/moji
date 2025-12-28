@@ -47,11 +47,28 @@ export const useKanjiGameStore = create<KanjiGameState>((set, get) => ({
     incorrectCount: 0,
 
     initializeGame: (kanjiList: Kanji[], limit: number = 0) => {
+        const { excludedCharacters } = useAppSettingsStore.getState();
+
+        // Filter out excluded characters
+        const activeKanjiList = kanjiList.filter(k => !excludedCharacters.has(k.character));
+
+        // If everything is excluded, prevent empty game (maybe keep one or handle gracefull)
+        // For now, if empty, we might just fail to start or show nothing. 
+        // Let's assume the UI prevents emptying the selection completely, or we handle it here.
+        if (activeKanjiList.length === 0) {
+            set({
+                gameStatus: 'idle',
+                queue: [],
+                history: [],
+            });
+            return;
+        }
+
         // Select a random subset if limit is set
-        let selectedKanji = kanjiList;
+        let selectedKanji = activeKanjiList;
         if (limit > 0) {
-            const shuffled = [...kanjiList].sort(() => Math.random() - 0.5);
-            selectedKanji = shuffled.slice(0, Math.min(limit, kanjiList.length));
+            const shuffled = [...activeKanjiList].sort(() => Math.random() - 0.5);
+            selectedKanji = shuffled.slice(0, Math.min(limit, activeKanjiList.length));
         }
 
         const weights: Record<string, number> = {};
@@ -128,7 +145,7 @@ export const useKanjiGameStore = create<KanjiGameState>((set, get) => ({
             newHistory = [...history, historyItem].slice(-HISTORY_SIZE);
         }
 
-        let remainingQueue = feedback !== 'none' ? queue.slice(1) : queue;
+        let remainingQueue = feedback === 'none' ? queue : queue.slice(1);
         let newRetriedCharacters = new Set(retriedCharacters);
 
         // If we should retry an incorrect answer, insert it back at a random position
@@ -205,14 +222,12 @@ export const useKanjiGameStore = create<KanjiGameState>((set, get) => ({
                 feedback: 'correct',
                 correctCount: state.correctCount + 1
             }));
-            // appStore.setKanjiCurrentScore(appStore.kanjiCurrentScore + 1); // Removing old score logic
             return true;
         } else {
             set((state) => ({
                 feedback: 'incorrect',
                 incorrectCount: state.incorrectCount + 1
             }));
-            // appStore.setKanjiCurrentScore(0); // Removing old score logic
             return false;
         }
     },

@@ -2,11 +2,10 @@ import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { JlptLevelSelector } from './JlptLevelSelector';
 import { useAppSettingsStore } from '../../store/appSettingsStore';
-import { expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 describe('JlptLevelSelector', () => {
     beforeEach(() => {
-        // Reset store to default state (only N5 selected)
         useAppSettingsStore.setState({
             jlptLevels: new Set(['N5'])
         });
@@ -33,10 +32,8 @@ describe('JlptLevelSelector', () => {
 
         const n4Button = screen.getByRole('button', { name: /toggle n4/i });
 
-        // Initially not selected
         expect(n4Button).not.toHaveClass('MuiIconButton-colorPrimary');
 
-        // Click to select
         await user.click(n4Button);
 
         // Now selected

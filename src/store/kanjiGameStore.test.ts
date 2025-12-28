@@ -134,4 +134,22 @@ describe('kanjiGameStore', () => {
         store.nextKanji();
         expect(useKanjiGameStore.getState().queue.length).toBeGreaterThan(0);
     });
+
+    it('respects excluded characters from appSettingsStore', () => {
+        const store = useKanjiGameStore.getState();
+        const settingsStore = useAppSettingsStore.getState();
+
+        // Exclude character 'A'
+        settingsStore.toggleCharacterExclusion('A');
+
+        store.initializeGame(mockKanjiList);
+
+        const state = useKanjiGameStore.getState();
+        // Should only contain 'B' because 'A' is excluded
+        expect(state.queue.length).toBe(1);
+        expect(state.queue[0].character).toBe('B');
+
+        // Clean up exclusion for other tests
+        settingsStore.toggleCharacterExclusion('A');
+    });
 });

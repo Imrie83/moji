@@ -1,4 +1,4 @@
-import { Box, Typography, useTheme, useMediaQuery, Backdrop, Fade } from '@mui/material';
+import { Box, Typography, useTheme, useMediaQuery, Backdrop, Fade, CircularProgress } from '@mui/material';
 import { useEffect, useState, useMemo } from 'react';
 import { KanjiTile } from '../KanjiTile/KanjiTile';
 import { KanjiDetailTile } from '../KanjiDetailTile/KanjiDetailTile';
@@ -28,7 +28,7 @@ export const GameArea = () => {
         resetGame,
     } = useKanjiGameStore();
 
-    const { jlptLevels, characterType, kanaTypes, showReading, showMeaning, practiceLimit, readingMode, showExpandedCard } = useAppSettingsStore();
+    const { jlptLevels, characterType, kanaTypes, showReading, showMeaning, practiceLimit, readingMode, showExpandedCard, excludedCharacters } = useAppSettingsStore();
 
     // Responsive
     const theme = useTheme();
@@ -69,8 +69,11 @@ export const GameArea = () => {
         if (characterList.length > 0) {
             resetGame();
             initializeGame(characterList, practiceLimit);
+        } else {
+            // If selection is empty, clear the game state
+            resetGame();
         }
-    }, [characterList, practiceLimit, resetGame, initializeGame]);
+    }, [characterList, practiceLimit, resetGame, initializeGame, excludedCharacters]);
 
     const handleSubmit = (value: string) => {
         if (isTransitioning) return;
@@ -104,7 +107,11 @@ export const GameArea = () => {
     }, [currentKanji, readingMode]);
 
     if (queue.length === 0) {
-        return <Box sx={{ p: 4, textAlign: 'center' }}>Loading...</Box>;
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 4, height: 300 }}>
+                <CircularProgress />
+            </Box>
+        );
     }
 
     const getTileStyle = (distance: number) => {

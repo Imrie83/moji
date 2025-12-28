@@ -22,6 +22,7 @@ interface AppSettingsState {
     jlptLevels: Set<JlptLevel>;
     characterType: CharacterType;
     kanaTypes: Set<KanaType>;
+    excludedCharacters: Set<string>;
     // Display settings
     showReading: boolean;
     showMeaning: boolean;
@@ -36,8 +37,12 @@ interface AppSettingsState {
     setTheme: (theme: Theme) => void;
     setEffectsLevel: (level: VisualEffectsLevel) => void;
     toggleJlptLevel: (level: JlptLevel) => void;
+    setJlptLevel: (level: JlptLevel, active: boolean) => void;
     setCharacterType: (type: CharacterType) => void;
     toggleKanaType: (type: KanaType) => void;
+    setKanaType: (type: KanaType, active: boolean) => void;
+    toggleCharacterExclusion: (char: string) => void;
+    setDatasetExclusions: (chars: string[], excluded: boolean) => void;
     setShowReading: (show: boolean) => void;
     setShowMeaning: (show: boolean) => void;
     setShowExpandedCard: (show: boolean) => void;
@@ -55,6 +60,7 @@ export const useAppSettingsStore = create<AppSettingsState>()((set) => ({
     jlptLevels: new Set<JlptLevel>(['N5']),
     characterType: 'kanji',
     kanaTypes: new Set<KanaType>(),
+    excludedCharacters: new Set<string>(),
     // Display settings defaults
     showReading: false,
     showMeaning: false,
@@ -92,20 +98,18 @@ export const useAppSettingsStore = create<AppSettingsState>()((set) => ({
         const newLevels = new Set(state.jlptLevels);
 
         if (newLevels.has(level)) {
-            // Only remove if there will be at least one level remaining
-            if (newLevels.size > 1) {
-                newLevels.delete(level);
-                // Still switch to kanji mode even when removing a level
-                return {
-                    jlptLevels: newLevels,
-                    characterType: 'kanji'
-                };
-            }
-            // If we can't remove the last level, still switch to kanji mode
-            return { characterType: 'kanji' };
+            newLevels.delete(level);
+            // If we remove the last level, we just have an empty set.
+            // GameArea will handle empty state.
+            return {
+                jlptLevels: newLevels,
+                // Only switch if we are actively modifying levels, though if we empty it, 
+                // we might still want to stay in kanji mode or not. 
+                // Let's keep existing behavior of switching to kanji mode on interaction.
+                characterType: 'kanji'
+            };
         } else {
             newLevels.add(level);
-            // Switch to kanji mode when selecting a kanji level
             return {
                 jlptLevels: newLevels,
                 characterType: 'kanji'
@@ -119,19 +123,57 @@ export const useAppSettingsStore = create<AppSettingsState>()((set) => ({
         const newTypes = new Set(state.kanaTypes);
 
         if (newTypes.has(type)) {
-            // Only remove if there will be at least one type remaining
-            if (newTypes.size > 1) {
-                newTypes.delete(type);
-            }
+            newTypes.delete(type);
         } else {
             newTypes.add(type);
         }
 
-        // Switch to kana mode when selecting a kana type
         return {
             kanaTypes: newTypes,
             characterType: 'kana'
         };
+    }),
+
+    setJlptLevel: (level: JlptLevel, active: boolean) => set((state) => {
+        const newLevels = new Set(state.jlptLevels);
+        if (active) {
+            newLevels.add(level);
+            return { jlptLevels: newLevels, characterType: 'kanji' };
+        } else {
+            newLevels.delete(level);
+            return { jlptLevels: newLevels };
+        }
+    }),
+
+    setKanaType: (type: KanaType, active: boolean) => set((state) => {
+        const newTypes = new Set(state.kanaTypes);
+        if (active) {
+            newTypes.add(type);
+            return { kanaTypes: newTypes, characterType: 'kana' };
+        } else {
+            newTypes.delete(type);
+            return { kanaTypes: newTypes };
+        }
+    }),
+
+    toggleCharacterExclusion: (char: string) => set((state) => {
+        const newExcluded = new Set(state.excludedCharacters);
+        if (newExcluded.has(char)) {
+            newExcluded.delete(char);
+        } else {
+            newExcluded.add(char);
+        }
+        return { excludedCharacters: newExcluded };
+    }),
+
+    setDatasetExclusions: (chars: string[], excluded: boolean) => set((state) => {
+        const newExcluded = new Set(state.excludedCharacters);
+        if (excluded) {
+            chars.forEach(c => newExcluded.add(c));
+        } else {
+            chars.forEach(c => newExcluded.delete(c));
+        }
+        return { excludedCharacters: newExcluded };
     }),
 
     setShowReading: (show: boolean) => set({ showReading: show }),
