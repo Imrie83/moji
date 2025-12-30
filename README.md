@@ -17,7 +17,7 @@ A modern, interactive application for mastering Japanese Kanji and Kana. Designe
 
 ### 🎮 Game Mechanics
 
--   **Smart Input**: Simply type the reading in Romaji — the app automatically converts it to Kana as you type (powered by `wanakana`).
+-   **Smart Input**: Simply type the reading in Romaji - the app automatically converts it to Kana as you type (powered by `wanakana`).
 -   **Flexible Reading Modes**: Configure how the app validates Kanji answers:
     -   **Onyomi & Kunyomi**: Accepts either reading (standard).
     -   **Onyomi Only**: Strict mode for focusing on Chinese readings.
